@@ -2,7 +2,6 @@ import mongoose, { Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 
-// tell what user doc look like,plus extending doc give access to doc methods
 
 export interface IUser extends Document {
   name: string;
@@ -49,7 +48,6 @@ const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-// instance method to compare password
 userSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
     return  bcrypt.compare(enteredPassword, this.password);
 }

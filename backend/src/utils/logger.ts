@@ -1,8 +1,6 @@
 import pino from "pino";
 
-// creating a centralized logger for this application
 const logger = pino({
-    // controls which kinda logs appear
   level: process.env.LOG_LEVEL || "info",
 
   transport:

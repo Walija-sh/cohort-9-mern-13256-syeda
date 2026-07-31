@@ -1,11 +1,11 @@
-// JWT generator
 import jwt from 'jsonwebtoken';
 import { StringValue } from 'ms';
+import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/env';
 const generateToken=(userId:string): string =>{
     return jwt.sign(
         {id:userId},
-        process.env.JWT_SECRET as string,
-        {expiresIn:process.env.JWT_EXPIRES_IN as StringValue}
+        JWT_SECRET as string,
+        {expiresIn:JWT_EXPIRES_IN as StringValue}
     );
 }
 
