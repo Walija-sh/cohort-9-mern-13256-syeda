@@ -21,3 +21,5 @@ const startServer=async (): Promise<void>=>{
 
 
 startServer();
+
+// later change start command in package.json to "start": "node dist/server.ts"
