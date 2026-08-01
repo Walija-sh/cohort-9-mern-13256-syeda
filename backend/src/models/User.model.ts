@@ -1,6 +1,7 @@
 import mongoose, { Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
+import { BCRYPT_SALT_ROUNDS } from "../config/env";
 
 
 export interface IUser extends Document {
@@ -43,8 +44,7 @@ const userSchema = new mongoose.Schema<IUser>({
 
 userSchema.pre("save", async function () {
     if (!this.isModified("password")) return;
-const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
-    const salt = await bcrypt.genSalt(saltRounds);
+    const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
     this.password = await bcrypt.hash(this.password, salt);
 });
 

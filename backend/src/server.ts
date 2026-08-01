@@ -1,10 +1,9 @@
 import 'dotenv/config';
-import "./config/env";
+import { PORT } from "./config/env";
 import app from './app';
 import connectDB from './config/db';
 import logger from './utils/logger';
 
-const PORT = process.env.PORT || 5000;
 
 const startServer=async (): Promise<void>=>{
     try {
