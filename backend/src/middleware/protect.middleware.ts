@@ -9,12 +9,11 @@ interface JwtPayload {
   id: string;
 }
 const protect = catchAsync(async (req:Request, res:Response, next:NextFunction): Promise<void> => {
-    const { authorization } = req.headers;
-    if (!authorization || !authorization.startsWith('Bearer')) {
-      return next(new AppError('Missing or invalid authorization header',401))
-    }
 
-    const token = authorization.split(' ')[1];
+    const token = req.cookies.token;
+    if (!token) {
+      return next(new AppError('Missing token',401));
+    }
     let decoded:JwtPayload;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;

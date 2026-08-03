@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server.ts",
     "test": "mocha",
-      "sonar": "sonar-scanner-npm"
+    "sonar": "sonar-scanner-npm"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -29,6 +30,7 @@
     "@sonar/scan": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/chai": "^5.2.3",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
