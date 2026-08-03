@@ -6,7 +6,8 @@
     "dev": "tsx watch src/server.ts | pino-pretty",
     "build": "tsc",
     "start": "node dist/server.ts",
-    "test": "mocha"
+    "test": "mocha",
+      "sonar": "sonar-scanner-npm"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "validator": "^13.15.35"
   },
   "devDependencies": {
+    "@sonar/scan": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/chai": "^5.2.3",
     "@types/cors": "^2.8.19",
