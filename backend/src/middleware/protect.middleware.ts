@@ -12,7 +12,7 @@ const protect = catchAsync(async (req:Request, res:Response, next:NextFunction):
 
     const token = req.cookies.token;
     if (!token) {
-      return next(new AppError('Missing token',401));
+      return next(new AppError('Authentication required. Please log in.',401));
     }
     let decoded:JwtPayload;
     try {
