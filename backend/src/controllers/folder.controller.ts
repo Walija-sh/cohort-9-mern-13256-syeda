@@ -3,9 +3,18 @@ import catchAsync from "../utils/catchAsync";
 import AppError from "../utils/appError";
 import Folder from "../models/Folder.model";
 import Note from "../models/Notes.model";
+import { ParamsDictionary } from "express-serve-static-core";
+import mongoose from "mongoose";
 
+interface CreateFolderBody {
+  name?: unknown;
+}
 
-const createFolder=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
+interface UpdateFolderBody {
+  name?: unknown;
+}
+
+const createFolder=catchAsync(async(req: Request<{},{},CreateFolderBody>,res:Response,next:NextFunction)=>{
     const {name}=req.body;
     const userId=req.user?._id;
 
@@ -56,7 +65,7 @@ const getFolderById=catchAsync(async(req: Request,res:Response,next:NextFunction
          }
     }) 
 })
-const updateFolder=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
+const updateFolder=catchAsync(async(req: Request<ParamsDictionary,{},UpdateFolderBody>,res:Response,next:NextFunction)=>{
     const folderId=req.params.id;
     const userId=req.user?._id;
     const {name}=req.body ?? {};
@@ -95,16 +104,37 @@ const deleteFolder=catchAsync(async(req: Request,res:Response,next:NextFunction)
     const folderId=req.params.id;
     const userId=req.user?._id;
 
-    const folder=await Folder.findOne({_id:folderId,owner:userId});
+    const session=await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+         const folder=await Folder.findOne(
+            {_id:folderId,owner:userId},
+            null,
+            {session}
+        );
     if(!folder){
+        await session.abortTransaction();
         return next(new AppError("Folder not found",404));
     }
-    await Note.deleteMany({parentFolder:folderId,owner:userId});
-    await folder.deleteOne();
+    await Note.deleteMany({parentFolder:folderId,owner:userId},{session});
+    await folder.deleteOne({session});
+    await session.commitTransaction();
     res.status(200).json({
         success: true,
         message: "Folder and its notes deleted successfully"
       })
+        
+    } catch (error) {
+        await session.abortTransaction();
+      throw error;
+    }finally{
+        session.endSession();
+    }
+
+    
+
+   
 })
 const getExplorerContents=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
     const folderId=req.query.folderId as string | undefined;

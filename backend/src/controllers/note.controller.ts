@@ -1,10 +1,45 @@
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import {NextFunction, Request, Response} from 'express';
-import Note from '../models/Notes.model';
+import Note, {IProseMirrorDocument} from '../models/Notes.model';
 import mongoose from 'mongoose';
+import { ParamsDictionary } from 'express-serve-static-core';
+import Folder from '../models/Folder.model';
 
-const createNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
+interface CreateNoteBody {
+  title?: unknown;
+  content?: unknown;
+  parentFolder?: string | null;
+}
+interface UpdateNoteBody {
+  title?: unknown;
+  content?: unknown;
+  parentFolder?: string | null;
+}
+
+async function resolveParentFolder(
+  parentFolder: unknown,
+  userId: mongoose.Types.ObjectId | undefined,
+  next: NextFunction
+): Promise<mongoose.Types.ObjectId | null | undefined> {
+  if (parentFolder === undefined) return undefined;
+  if (parentFolder === null) return null;            
+
+  if (typeof parentFolder !== "string" || !mongoose.Types.ObjectId.isValid(parentFolder)) {
+    next(new AppError("Invalid parentFolder id", 400));
+    return undefined;
+  }
+
+  const folder = await Folder.findOne({ _id: parentFolder, owner: userId });
+  if (!folder) {
+    next(new AppError("Parent folder not found", 404));
+    return undefined;
+  }
+
+  return new mongoose.Types.ObjectId(parentFolder);
+}
+
+const createNote=catchAsync(async(req: Request<{}, {}, CreateNoteBody>,res:Response,next:NextFunction)=>{
 
   const {title,content,parentFolder}=req.body;
 
@@ -17,11 +52,18 @@ const createNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
     return next(new AppError("Title can't be empty",400));
   }
 
+   let resolvedParent: mongoose.Types.ObjectId | null = null;
+    if (parentFolder !== undefined && parentFolder !== null) {
+      const result = await resolveParentFolder(parentFolder, userId, next);
+      if (result === undefined) return; // error already sent
+      resolvedParent = result;
+    }
+
   const note=await Note.create({
     title,
-    content,
+    content:content as IProseMirrorDocument,
     owner:userId,
-    parentFolder:parentFolder ?? null
+    parentFolder: resolvedParent
   });
     
     res.status(201).json({
@@ -73,13 +115,13 @@ const getNoteById=catchAsync(async(req: Request,res:Response,next:NextFunction)=
   }
 })
 })
-const updateNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
+const updateNote=catchAsync(async(req: Request<ParamsDictionary, {}, UpdateNoteBody>,res:Response,next:NextFunction)=>{
 
   const noteId=req.params.id;
   const userId=req.user?._id;
   const {title,content,parentFolder}=req.body ?? {};
 
-  let updateFields: { title?: string; content?: unknown, parentFolder?: mongoose.Types.ObjectId | null } = {};
+  let updateFields: { title?: string; content?: IProseMirrorDocument, parentFolder?: mongoose.Types.ObjectId | null } = {};
 
   if(title === undefined && content === undefined && parentFolder ===undefined) {
     return next(new AppError("Please provide at least one field to update",400));
@@ -96,12 +138,14 @@ const updateNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
   }
 
   if(content !== undefined) {
-    updateFields.content = content;
+    updateFields.content = content as IProseMirrorDocument;
   }
 
-  if(parentFolder !== undefined) {
-    updateFields.parentFolder = parentFolder;
-  }
+  if (parentFolder !== undefined) {
+      const result = await resolveParentFolder(parentFolder, userId, next);
+      if (result === undefined && parentFolder !== null) return; 
+      updateFields.parentFolder = result ?? null;
+    }
   
   const note=await Note.findOneAndUpdate({_id:noteId,owner:userId},updateFields,{new:true,runValidators:true});
 
