@@ -2,11 +2,11 @@ import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
 import {NextFunction, Request, Response} from 'express';
 import Note from '../models/Notes.model';
-
+import mongoose from 'mongoose';
 
 const createNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>{
 
-  const {title,content}=req.body;
+  const {title,content,parentFolder}=req.body;
 
   const userId=req.user?._id;
 
@@ -20,7 +20,8 @@ const createNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
   const note=await Note.create({
     title,
     content,
-    owner:userId
+    owner:userId,
+    parentFolder:parentFolder ?? null
   });
     
     res.status(201).json({
@@ -34,8 +35,17 @@ const createNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
 const getAllNotes=catchAsync(async(req: Request,res:Response)=>{
 
   const userId=req.user?._id;
+  const parentFolder=req.query.parentFolder as string | undefined;
 
-  const notes=await Note.find({owner:userId}).sort({createdAt:-1})
+  let notes;
+  if(parentFolder !== undefined){
+notes=await Note.find({owner:userId,parentFolder:parentFolder}).sort({createdAt:-1})
+  }else{
+    notes=await Note.find({owner:userId,parentFolder:null}).sort({createdAt:-1})
+  }
+
+
+  
 
     res.status(200).json({
   "success": true,
@@ -67,12 +77,12 @@ const updateNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
 
   const noteId=req.params.id;
   const userId=req.user?._id;
-  const {title,content}=req.body ?? {};
+  const {title,content,parentFolder}=req.body ?? {};
 
-  let updateFields: { title?: string; content?: unknown } = {};
+  let updateFields: { title?: string; content?: unknown, parentFolder?: mongoose.Types.ObjectId | null } = {};
 
-  if(title === undefined && content === undefined) {
-    return next(new AppError("At least one field (title or content) is required to update",400));
+  if(title === undefined && content === undefined && parentFolder ===undefined) {
+    return next(new AppError("Please provide at least one field to update",400));
   }
 
   if(title !== undefined){
@@ -87,6 +97,10 @@ const updateNote=catchAsync(async(req: Request,res:Response,next:NextFunction)=>
 
   if(content !== undefined) {
     updateFields.content = content;
+  }
+
+  if(parentFolder !== undefined) {
+    updateFields.parentFolder = parentFolder;
   }
   
   const note=await Note.findOneAndUpdate({_id:noteId,owner:userId},updateFields,{new:true,runValidators:true});

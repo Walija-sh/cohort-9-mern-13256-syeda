@@ -9,7 +9,8 @@ export interface IProseMirrorDocument{
 export interface INotes extends Document{
     title:string,
     content: IProseMirrorDocument,
-    owner: mongoose.Types.ObjectId
+    owner: mongoose.Types.ObjectId,
+    parentFolder?: mongoose.Types.ObjectId | null
 }
 
 const notesSchema=new Schema<INotes>({
@@ -43,6 +44,11 @@ owner:{
     type:Schema.Types.ObjectId,
     ref:"User",
     required:[true,'Notes must have owner']
+},
+parentFolder:{
+type:Schema.Types.ObjectId,
+ref:"Folder",
+default:null
 }
 },{
     timestamps:true
