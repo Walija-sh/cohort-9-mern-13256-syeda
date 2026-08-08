@@ -97,12 +97,41 @@ if (!FRONTEND_URL) {
     logger.fatal("FRONTEND_URL is missing.");
     process.exit(1);
 }
+if (!FRONTEND_URL) {
+    logger.fatal("FRONTEND_URL is missing.");
+    process.exit(1);
+}
+
+let parsedFrontendUrl: URL;
 try {
-    new URL(FRONTEND_URL);
+    parsedFrontendUrl = new URL(FRONTEND_URL);
 } catch {
     logger.fatal("FRONTEND_URL must be a valid URL.");
     process.exit(1);
 }
+
+if (!["http:", "https:"].includes(parsedFrontendUrl.protocol)) {
+    logger.fatal("FRONTEND_URL must use http or https protocol.");
+    process.exit(1);
+}
+
+if (parsedFrontendUrl.username || parsedFrontendUrl.password) {
+    logger.fatal("FRONTEND_URL must not contain credentials.");
+    process.exit(1);
+}
+
+const hasExtraParts =
+    (parsedFrontendUrl.pathname !== "/" && parsedFrontendUrl.pathname !== "") ||
+    parsedFrontendUrl.search !== "" ||
+    parsedFrontendUrl.hash !== "";
+
+if (hasExtraParts) {
+    logger.fatal(
+        "FRONTEND_URL must be a root origin only (no path, query, or fragment), e.g. https://frontend.example"
+    );
+    process.exit(1);
+}
+const NORMALIZED_FRONTEND_URL = parsedFrontendUrl.origin;
 const durationRegex = /^(\d+)(ms|s|m|h|d|w|y)$/;
 const durationMatch = JWT_EXPIRES_IN.match(durationRegex);
 
@@ -129,7 +158,7 @@ const config: Readonly<AppConfig> = Object.freeze({
     MONGODB_URI,
     JWT_SECRET,
     JWT_EXPIRES_IN,
-    FRONTEND_URL,
+    FRONTEND_URL: NORMALIZED_FRONTEND_URL,
     BCRYPT_SALT_ROUNDS,
 });
 
@@ -141,6 +170,6 @@ export {
     MONGODB_URI,
     JWT_SECRET,
     JWT_EXPIRES_IN,
-    FRONTEND_URL,
+    NORMALIZED_FRONTEND_URL as FRONTEND_URL,
     BCRYPT_SALT_ROUNDS,
 };

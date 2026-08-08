@@ -23,14 +23,21 @@ async function resolveParentFolder(
   next: NextFunction
 ): Promise<mongoose.Types.ObjectId | null | undefined> {
   if (parentFolder === undefined) return undefined;
-  if (parentFolder === null) return null;            
+  if (parentFolder === null) return null;
 
   if (typeof parentFolder !== "string" || !mongoose.Types.ObjectId.isValid(parentFolder)) {
     next(new AppError("Invalid parentFolder id", 400));
     return undefined;
   }
 
-  const folder = await Folder.findOne({ _id: parentFolder, owner: userId });
+  let folder;
+  try {
+    folder = await Folder.findOne({ _id: parentFolder, owner: userId });
+  } catch (err) {
+    next(err);
+    return undefined;
+  }
+
   if (!folder) {
     next(new AppError("Parent folder not found", 404));
     return undefined;

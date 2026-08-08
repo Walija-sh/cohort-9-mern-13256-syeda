@@ -20,13 +20,29 @@ export interface INotes extends Document{
     parentFolder?: mongoose.Types.ObjectId | null
 }
 
+function isValidAttrs(attrs: unknown): boolean {
+  return typeof attrs === "object" && attrs !== null && !Array.isArray(attrs);
+}
+
+function isValidMark(mark: unknown): mark is { type: string; attrs?: Record<string, unknown> } {
+  if (typeof mark !== "object" || mark === null || Array.isArray(mark)) return false;
+  const m = mark as Record<string, unknown>;
+
+  if (typeof m.type !== "string" || m.type.trim() === "") return false;
+  if (m.attrs !== undefined && !isValidAttrs(m.attrs)) return false;
+
+  return true;
+}
+
 function isValidNode(node: unknown): node is IProseMirrorNode {
-  if (typeof node !== "object" || node === null) return false;
+  if (typeof node !== "object" || node === null || Array.isArray(node)) return false;
   const n = node as Record<string, unknown>;
 
   if (typeof n.type !== "string" || n.type.trim() === "") return false;
 
   if (n.text !== undefined && typeof n.text !== "string") return false;
+
+  if (n.attrs !== undefined && !isValidAttrs(n.attrs)) return false;
 
   if (n.content !== undefined) {
     if (!Array.isArray(n.content)) return false;
@@ -35,9 +51,7 @@ function isValidNode(node: unknown): node is IProseMirrorNode {
 
   if (n.marks !== undefined) {
     if (!Array.isArray(n.marks)) return false;
-    if (!n.marks.every(m => typeof m === "object" && m !== null && typeof (m as any).type === "string")) {
-      return false;
-    }
+    if (!n.marks.every(isValidMark)) return false;
   }
 
   return true;
