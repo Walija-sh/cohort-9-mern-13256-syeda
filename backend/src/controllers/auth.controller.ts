@@ -3,7 +3,7 @@ import User from '../models/User.model'
 import generateToken from '../utils/generateToken';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
-import { Request, Response } from 'express';
+import { Request, Response,CookieOptions } from 'express';
 
 interface RegisterBody {
     name: string;
@@ -14,6 +14,17 @@ interface LoginBody {
     email: string;
     password: string;
 }
+
+const isProduction=process.env.NODE_ENV==='production';
+
+const cookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+}
+
 const registerUser=catchAsync(
     async(req: Request<{}, {}, RegisterBody>,res:Response)=>{
     
@@ -42,18 +53,18 @@ const registerUser=catchAsync(
         const trimmedPassword = password.trim();
         const user =await User.create({name,email,password:trimmedPassword});
 
-        const token= generateToken(user.id);
+        const token= generateToken(user._id.toString());
 
+        res.cookie('token', token, cookieOptions);
 
           
           res.status(201).json({
          "success": true,
   "message": "User registered successfully.",
          data: {
-    id: user.id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
-    token
   }
     })
 
@@ -84,17 +95,18 @@ const loginUser=catchAsync(async(req:Request<{}, {}, LoginBody>,res:Response)=>{
     );
 }
 
-        const token= generateToken(user.id);
+        const token= generateToken(user._id.toString());
 
+        res.cookie('token', token, cookieOptions);
           
           res.status(200).json({
         success: true,
         message:'Login User successfully',
          data: {
-    id: user.id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
-    token
+    
   }
     })
 
@@ -107,11 +119,25 @@ const getMe = catchAsync(async (req:Request, res:Response) => {
         success: true,
         message: "Current user fetched successfully.",
         data: {
-            id: user.id,
+            id: user._id.toString(),
             name: user.name,
             email: user.email,
         },
     });
 });
+const logOut = catchAsync(async (req:Request, res:Response) => {
+   
+    res.clearCookie('token',  {
+  httpOnly: cookieOptions.httpOnly,
+  secure: cookieOptions.secure,
+  sameSite: cookieOptions.sameSite,
+  path: cookieOptions.path,
+});
 
-export {registerUser,loginUser,getMe}
+    res.status(200).json({
+        success: true,
+        message: "Current user Logged Out successfully."
+    });
+});
+
+export {registerUser,loginUser,getMe,logOut}

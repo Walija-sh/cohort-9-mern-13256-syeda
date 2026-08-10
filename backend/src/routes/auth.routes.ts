@@ -4,6 +4,7 @@ import {
   registerUser,
   loginUser,
   getMe,
+  logOut
 } from "../controllers/auth.controller";
 
 import protect from "../middleware/protect.middleware";
@@ -15,5 +16,6 @@ authRouter.post("/login", loginUser);
 
 
 authRouter.get("/me", protect, getMe);
+authRouter.get("/logout", protect, logOut);
 
 export default authRouter;
