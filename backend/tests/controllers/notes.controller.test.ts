@@ -134,7 +134,8 @@ describe("Notes controller", () => {
 
     getAllNotes(
       req as any,
-      { status } as any
+      { status } as any,
+  sinon.stub() as unknown as NextFunction
     );
 
     await new Promise(resolve => setImmediate(resolve));
