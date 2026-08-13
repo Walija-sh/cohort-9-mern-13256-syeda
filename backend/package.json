@@ -9,7 +9,7 @@
     "dev": "tsx watch src/server.ts | pino-pretty",
     "build": "tsc",
     "start": "node dist/server.ts",
-    "test": "mocha --require tsx/esm \"tests/**/*.test.ts\"",
+    "test": "mocha --require tsx --require dotenv/config \"tests/**/*.test.ts\"",
     "sonar": "sonar-scanner-npm"
   },
   "keywords": [],
