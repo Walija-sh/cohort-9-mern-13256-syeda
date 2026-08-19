@@ -46,16 +46,7 @@ function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
-
-          <button
-            type="button"
-            className="text-xs font-medium hover:underline"
-          >
-            Forgot password?
-          </button>
-        </div>
+          <Label htmlFor="password">Password</Label>    
 
         <div className="relative">
           <Input

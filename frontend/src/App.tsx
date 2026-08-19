@@ -1,10 +1,16 @@
-import AppRoutes from './routes/AppRoutes'
+import { useEffect } from "react";
+import AppRoutes from "./routes/AppRoutes";
+import { useAppDispatch } from "./store/hooks";
+import { getMe } from "./store/authSlice";
 
 function App() {
+  const dispatch = useAppDispatch();
 
-  return (
-  <AppRoutes/>
-  )
+  useEffect(() => {
+    dispatch(getMe());
+  }, [dispatch]);
+
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
