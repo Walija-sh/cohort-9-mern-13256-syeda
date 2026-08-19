@@ -5,10 +5,17 @@ frontend/node_modules/
 # Environment files
 backend/.env
 frontend/.env
+backend/.env.*
+frontend/.env.*
+
+# Environment examples
+!backend/.env.example
+!frontend/.env.example
 
 # Build output
 backend/dist/
 frontend/dist/
+frontend/dist-ssr/
 
 # Coverage
 backend/coverage/
@@ -16,6 +23,21 @@ frontend/coverage/
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local configuration
+*.local
+
+#IDE
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # OS files
 .DS_Store
