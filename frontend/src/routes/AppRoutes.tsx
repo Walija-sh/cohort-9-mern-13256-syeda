@@ -1,19 +1,28 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
 import Auth from "../pages/Auth";
-import Dashboard from "../pages/Dashboard";
+import DashboardLayout from "../layouts/DashboardLayout";
+import Folders from "../pages/Folders";
+import Notes from "../pages/Notes";
 import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route path="/login" element={<Auth />} />
-        <Route path="/signup" element={<Auth />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Auth />} />
+          <Route path="/signup" element={<Auth />} />
+        </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<Notes />} />
+            <Route path="/folders" element={<Folders />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
