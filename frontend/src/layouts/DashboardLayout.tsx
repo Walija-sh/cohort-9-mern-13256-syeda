@@ -8,20 +8,65 @@ import {
   Sun,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
-import { Button } from "../components/ui/button";
-import { useAppDispatch } from "../store/hooks";
-import { logout } from "../store/authSlice";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/authSlice";
+import Logo from "@/components/Logo";
 
 function DashboardLayout() {
   const dispatch = useAppDispatch();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(
-    document.documentElement.classList.contains("dark")
+    document.documentElement.classList.contains("dark"),
   );
+
+  const asideRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const asideEl = asideRef.current;
+    if (!asideEl) return;
+
+    const focusableSelector =
+      'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])';
+    const focusableEls = Array.from(
+      asideEl.querySelectorAll<HTMLElement>(focusableSelector),
+    );
+    const firstEl = focusableEls[0];
+    const lastEl = focusableEls[focusableEls.length - 1];
+
+    firstEl?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+        return;
+      }
+
+      if (e.key === "Tab") {
+        if (e.shiftKey && document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl?.focus();
+        } else if (!e.shiftKey && document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl?.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      menuButtonRef.current?.focus();
+    };
+  }, [isMobileMenuOpen]);
 
   const handleThemeToggle = () => {
     document.documentElement.classList.toggle("dark");
@@ -52,14 +97,7 @@ function DashboardLayout() {
   const sidebarContent = (
     <>
       <div className="flex h-20 items-center gap-3 border-b px-5">
-        <div className="relative flex size-9 shrink-0 items-center justify-center">
-          <div className="absolute bottom-0 right-0 size-4 rotate-12 rounded-md bg-primary/30" />
-
-          <FileText
-            className="relative size-6 text-primary"
-            strokeWidth={2}
-          />
-        </div>
+        <Logo size="sm" className="shrink-0" />
 
         <div className="min-w-0">
           <h1 className="truncate text-sm font-bold tracking-tight">
@@ -121,11 +159,7 @@ function DashboardLayout() {
           className="w-full justify-start gap-3"
           onClick={handleThemeToggle}
         >
-          {isDark ? (
-            <Sun className="size-4" />
-          ) : (
-            <Moon className="size-4" />
-          )}
+          {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
 
           {isDark ? "Light mode" : "Dark mode"}
         </Button>
@@ -149,25 +183,29 @@ function DashboardLayout() {
       </aside>
 
       {isMobileMenuOpen && (
-        <button
-          type="button"
-          aria-label="Close navigation"
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={closeMobileMenu}
-        />
+        <>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={closeMobileMenu}
+          />
+          <aside
+            ref={asideRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            className="fixed inset-y-0 left-0 z-50 flex w-70 max-w-[85vw] flex-col border-r bg-card shadow-xl md:hidden"
+          >
+            {sidebarContent}
+          </aside>
+        </>
       )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r bg-card shadow-xl transition-transform duration-200 md:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {sidebarContent}
-      </aside>
 
       <div className="min-h-screen md:pl-64">
         <header className="sticky top-0 z-30 flex h-16 items-center border-b bg-background/95 px-4 backdrop-blur md:hidden">
           <Button
+            ref={menuButtonRef}
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(true)}
@@ -177,14 +215,7 @@ function DashboardLayout() {
           </Button>
 
           <div className="ml-3 flex items-center gap-2">
-            <div className="relative flex size-8 items-center justify-center">
-              <div className="absolute bottom-0 right-0 size-3.5 rotate-12 rounded-md bg-primary/30" />
-
-              <FileText
-                className="relative size-5 text-primary"
-                strokeWidth={2}
-              />
-            </div>
+            <Logo size="sm" />
 
             <span className="text-sm font-bold">NotesHub</span>
           </div>
@@ -196,11 +227,7 @@ function DashboardLayout() {
             onClick={handleThemeToggle}
             aria-label="Toggle theme"
           >
-            {isDark ? (
-              <Sun className="size-4" />
-            ) : (
-              <Moon className="size-4" />
-            )}
+            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
         </header>
 

@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const Folders = () => {
-  return (
-    <div>Folders</div>
-  )
-}
+  return <div>Folders Placeholder</div>;
+};
 
-export default Folders
+export default Folders;

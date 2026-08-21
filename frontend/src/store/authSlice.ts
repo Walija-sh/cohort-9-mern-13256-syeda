@@ -1,11 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import authService from "../services/authService";
+import authService from "@/services/authService";
 import type {
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
   User,
-} from "../types/auth";
+} from "@/types/auth";
+import { getErrorMessage } from "@/utils/getErrorMessage";
 
 interface AuthState {
   user: User | null;
@@ -30,9 +31,9 @@ export const register = createAsyncThunk<
 >("auth/register", async (credentials, thunkAPI) => {
   try {
     return await authService.register(credentials);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Registration failed."
+      getErrorMessage(error, "Registration failed."),
     );
   }
 });
@@ -44,10 +45,8 @@ export const login = createAsyncThunk<
 >("auth/login", async (credentials, thunkAPI) => {
   try {
     return await authService.login(credentials);
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Login failed."
-    );
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, "Login failed."));
   }
 });
 
@@ -58,9 +57,9 @@ export const getMe = createAsyncThunk<
 >("auth/getMe", async (_, thunkAPI) => {
   try {
     return await authService.getMe();
-  } catch (error: any) {
+  } catch (error: unknown) {
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Failed to fetch user."
+      getErrorMessage(error, "Failed to fetch user."),
     );
   }
 });
@@ -72,10 +71,8 @@ export const logout = createAsyncThunk<
 >("auth/logout", async (_, thunkAPI) => {
   try {
     return await authService.logout();
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Logout failed."
-    );
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, "Logout failed."));
   }
 });
 
@@ -84,8 +81,8 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     clearError: (state) => {
-    state.error = null;
-  },
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder

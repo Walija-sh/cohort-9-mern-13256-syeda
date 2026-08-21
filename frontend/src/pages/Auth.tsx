@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { FileText } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
-import { Card, CardContent } from "../components/ui/card";
-import LoginForm from "../components/auth/LoginForm";
-import SignupForm from "../components/auth/SignupForm";
+import { Card, CardContent } from "@/components/ui/card";
+import LoginForm from "@/components/auth/LoginForm";
+import SignupForm from "@/components/auth/SignupForm";
 
-import { useAppDispatch } from "../store/hooks";
-import { clearError } from "../store/authSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { clearError } from "@/store/authSlice";
+import Logo from "@/components/Logo";
 
 function Auth() {
   const location = useLocation();
@@ -24,20 +24,12 @@ function Auth() {
       <Card className="w-full max-w-md">
         <CardContent className="p-6 sm:p-8">
           <div className="mb-8 text-center">
-           <div className="relative mx-auto mb-4 flex size-12 items-center justify-center">
-    <div className="absolute bottom-0.5 right-1 size-5 rotate-12 rounded-md bg-primary/30" />
+            <Logo size="lg" className="mx-auto mb-4" />
 
-    <FileText className="relative size-7 text-primary" strokeWidth={2} />
-  </div>
-
-            <h1 className="text-2xl font-bold tracking-tight">
-              NotesHub
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight">NotesHub</h1>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {isSignup
-                ? "Create your workspace"
-                : "Productivity Workspace"}
+              {isSignup ? "Create your workspace" : "Productivity Workspace"}
             </p>
           </div>
 

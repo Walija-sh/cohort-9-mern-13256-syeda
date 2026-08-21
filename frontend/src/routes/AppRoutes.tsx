@@ -1,11 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import Auth from "../pages/Auth";
-import DashboardLayout from "../layouts/DashboardLayout";
-import Folders from "../pages/Folders";
-import Notes from "../pages/Notes";
-import ProtectedRoute from "./ProtectedRoute";
-import PublicRoute from "./PublicRoute";
+import Auth from "@/pages/Auth";
+import DashboardLayout from "@/layouts/DashboardLayout";
+import Folders from "@/pages/Folders";
+import Notes from "@/pages/Notes";
+import ProtectedRoute from "@/routes/ProtectedRoute";
+import PublicRoute from "@/routes/PublicRoute";
 
 function AppRoutes() {
   return (

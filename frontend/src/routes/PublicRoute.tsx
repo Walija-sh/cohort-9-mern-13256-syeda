@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAppSelector } from "../store/hooks";
+import { useAppSelector } from "@/store/hooks";
 
 function PublicRoute() {
   const { isAuthenticated, isInitialized } = useAppSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
 
   if (!isInitialized) {

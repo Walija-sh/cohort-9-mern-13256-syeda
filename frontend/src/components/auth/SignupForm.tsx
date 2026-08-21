@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { register } from "../../store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { register } from "@/store/authSlice";
 
 function SignupForm() {
   const dispatch = useAppDispatch();
@@ -25,7 +25,7 @@ function SignupForm() {
 
   const [passwordError, setPasswordError] = useState("");
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (password !== confirmPassword) {
@@ -41,12 +41,12 @@ function SignupForm() {
           name,
           email,
           password,
-        })
+        }),
       ).unwrap();
 
       navigate("/dashboard");
     } catch {
-    
+      // rejection already captured in redux
     }
   };
 
@@ -123,9 +123,7 @@ function SignupForm() {
 
           <button
             type="button"
-            onClick={() =>
-              setShowConfirmPassword((previous) => !previous)
-            }
+            onClick={() => setShowConfirmPassword((previous) => !previous)}
             className="absolute right-3 top-1/2 -translate-y-1/2"
             aria-label={
               showConfirmPassword
@@ -142,12 +140,14 @@ function SignupForm() {
         </div>
 
         {passwordError && (
-          <p className="text-sm text-destructive">{passwordError}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {passwordError}
+          </p>
         )}
       </div>
 
       {error && (
-        <p className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
@@ -158,10 +158,7 @@ function SignupForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link
-          to="/login"
-          className="font-medium text-primary hover:underline"
-        >
+        <Link to="/login" className="font-medium text-primary hover:underline">
           Log in
         </Link>
       </p>

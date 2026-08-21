@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { login } from "../../store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { login } from "@/store/authSlice";
 
 function LoginForm() {
   const dispatch = useAppDispatch();
@@ -19,14 +19,14 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     try {
       await dispatch(login({ email, password })).unwrap();
       navigate("/dashboard");
     } catch {
-      
+      // rejection already captured in redux
     }
   };
 
@@ -46,7 +46,7 @@ function LoginForm() {
       </div>
 
       <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>    
+        <Label htmlFor="password">Password</Label>
 
         <div className="relative">
           <Input
@@ -75,7 +75,7 @@ function LoginForm() {
       </div>
 
       {error && (
-        <p className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
@@ -86,10 +86,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Don't have an account?{" "}
-        <Link
-          to="/signup"
-          className="font-medium text-primary hover:underline"
-        >
+        <Link to="/signup" className="font-medium text-primary hover:underline">
           Sign up
         </Link>
       </p>
