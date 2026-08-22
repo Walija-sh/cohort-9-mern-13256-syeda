@@ -1,4 +1,4 @@
-import type { Note } from "./note";
+import type { Note } from "@/types/note";
 
 export interface Folder {
   _id: string;
@@ -48,4 +48,9 @@ export interface ExplorerFolderResponse {
     folder: Folder;
     notes: Note[];
   };
+}
+
+export interface DeleteFolderResponse {
+  success: boolean;
+  message: string;
 }

@@ -37,3 +37,7 @@ export interface UpdateNotePayload {
   content?: JSONContent;
   parentFolder?: string | null;
 }
+export interface DeleteNoteResponse {
+  success: boolean;
+  message: string;
+}
