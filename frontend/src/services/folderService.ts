@@ -30,30 +30,24 @@ const updateFolder = async (
   id: string,
   payload: UpdateFolderPayload,
 ): Promise<FolderResponse> => {
-  const response = await api.patch<FolderResponse>(
-    `/folders/${id}`,
-    payload,
-  );
+  const response = await api.patch<FolderResponse>(`/folders/${id}`, payload);
   return response.data;
 };
 
-const deleteFolder = async (
-  id: string,
-): Promise<DeleteFolderResponse> => {
-  const response = await api.delete<DeleteFolderResponse>(
-    `/folders/${id}`,
-  );
+const deleteFolder = async (id: string): Promise<DeleteFolderResponse> => {
+  const response = await api.delete<DeleteFolderResponse>(`/folders/${id}`);
   return response.data;
 };
 
 const getExplorerContents = async (
   folderId?: string,
 ): Promise<ExplorerRootResponse | ExplorerFolderResponse> => {
-  const response = await api.get<
-    ExplorerRootResponse | ExplorerFolderResponse
-  >("/folders/explorer", {
-    params: folderId ? { folderId } : undefined,
-  });
+  const response = await api.get<ExplorerRootResponse | ExplorerFolderResponse>(
+    "/folders/explorer",
+    {
+      params: folderId ? { folderId } : undefined,
+    },
+  );
 
   return response.data;
 };

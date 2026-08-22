@@ -14,9 +14,7 @@ const createNote = async (
   return response.data;
 };
 
-const getAllNotes = async (
-  parentFolder?: string,
-): Promise<NotesResponse> => {
+const getAllNotes = async (parentFolder?: string): Promise<NotesResponse> => {
   const response = await api.get<NotesResponse>("/notes", {
     params: parentFolder ? { parentFolder } : undefined,
   });
