@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import noteService from "@/services/noteService";
 import type { CreateNotePayload, Note, UpdateNotePayload } from "@/types/note";
 import { getErrorMessage } from "@/utils/getErrorMessage";
@@ -102,6 +106,12 @@ const noteSlice = createSlice({
     clearCurrentNote: (state) => {
       state.currentNote = null;
     },
+    setNotes: (state, action: PayloadAction<Note[]>) => {
+      state.notes = action.payload;
+    },
+    clearNotes: (state) => {
+      state.notes = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -186,6 +196,7 @@ const noteSlice = createSlice({
   },
 });
 
-export const { clearError, clearCurrentNote } = noteSlice.actions;
+export const { clearError, clearCurrentNote, setNotes, clearNotes } =
+  noteSlice.actions;
 
 export default noteSlice.reducer;

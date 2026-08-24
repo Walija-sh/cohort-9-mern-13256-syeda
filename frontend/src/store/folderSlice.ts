@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import folderService from "@/services/folderService";
 import type {
   CreateFolderPayload,
+  ExplorerFolderResponse,
+  ExplorerRootResponse,
   Folder,
   UpdateFolderPayload,
 } from "@/types/folder";
@@ -96,6 +98,21 @@ export const deleteFolder = createAsyncThunk<
   }
 });
 
+export const getExplorerContents = createAsyncThunk<
+  ExplorerRootResponse | ExplorerFolderResponse,
+  string | undefined,
+  { rejectValue: string }
+>("folders/getExplorerContents", async (folderId, thunkAPI) => {
+  try {
+    const response = await folderService.getExplorerContents(folderId);
+    return response;
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(
+      getErrorMessage(error, "Failed to fetch explorer contents."),
+    );
+  }
+});
+
 const folderSlice = createSlice({
   name: "folders",
   initialState,
@@ -116,7 +133,6 @@ const folderSlice = createSlice({
       .addCase(createFolder.fulfilled, (state, action) => {
         state.isLoading = false;
         state.folders.unshift(action.payload);
-        state.currentFolder = action.payload;
       })
       .addCase(createFolder.rejected, (state, action) => {
         state.isLoading = false;
@@ -164,7 +180,9 @@ const folderSlice = createSlice({
           state.folders[index] = action.payload;
         }
 
-        state.currentFolder = action.payload;
+        if (state.currentFolder?._id === action.payload._id) {
+          state.currentFolder = action.payload;
+        }
       })
       .addCase(updateFolder.rejected, (state, action) => {
         state.isLoading = false;
@@ -188,6 +206,25 @@ const folderSlice = createSlice({
       .addCase(deleteFolder.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to delete folder.";
+      })
+      .addCase(getExplorerContents.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getExplorerContents.fulfilled, (state, action) => {
+        state.isLoading = false;
+
+        if ("folder" in action.payload.data) {
+          state.currentFolder = action.payload.data.folder;
+          state.folders = [];
+        } else {
+          state.currentFolder = null;
+          state.folders = action.payload.data.folders;
+        }
+      })
+      .addCase(getExplorerContents.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Failed to fetch explorer contents.";
       });
   },
 });

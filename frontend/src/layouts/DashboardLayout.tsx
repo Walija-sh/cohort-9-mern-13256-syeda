@@ -1,6 +1,5 @@
 import {
   FileText,
-  Folder,
   LogOut,
   Menu,
   Moon,
@@ -9,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/store/hooks";
@@ -18,6 +17,10 @@ import Logo from "@/components/Logo";
 
 function DashboardLayout() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const folderMatch = useMatch("/dashboard/folders/:folderId/*");
+  const currentFolderId = folderMatch?.params.folderId;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(
@@ -31,6 +34,7 @@ function DashboardLayout() {
     if (!isMobileMenuOpen) return;
 
     const asideEl = asideRef.current;
+    const menuButtonEl = menuButtonRef.current;
     if (!asideEl) return;
 
     const focusableSelector =
@@ -64,7 +68,7 @@ function DashboardLayout() {
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      menuButtonRef.current?.focus();
+      menuButtonEl?.focus();
     };
   }, [isMobileMenuOpen]);
 
@@ -81,16 +85,20 @@ function DashboardLayout() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleCreateNote = () => {
+    if (currentFolderId) {
+      navigate(`/dashboard/folders/${currentFolderId}/notes/new`);
+      return;
+    }
+
+    navigate("/dashboard/notes/new");
+  };
+
   const navigation = [
     {
       label: "Notes",
       href: "/dashboard",
       icon: FileText,
-    },
-    {
-      label: "Folders",
-      href: "/folders",
-      icon: Folder,
     },
   ];
 
@@ -120,7 +128,7 @@ function DashboardLayout() {
         </Button>
       </div>
       <div className="px-4 py-5">
-        <Button className="w-full gap-2">
+        <Button onClick={handleCreateNote} className="w-full gap-2">
           <Plus className="size-4" />
           New Note
         </Button>
