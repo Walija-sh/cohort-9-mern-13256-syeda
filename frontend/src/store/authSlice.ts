@@ -1,21 +1,147 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import authService from "@/services/authService";
+import type {
+  AuthResponse,
+  LoginCredentials,
+  RegisterCredentials,
+  User,
+} from "@/types/auth";
+import { getErrorMessage } from "@/utils/getErrorMessage";
 
 interface AuthState {
-  user: null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
+  error: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitialized: false,
+  error: null,
 };
+
+export const register = createAsyncThunk<
+  AuthResponse,
+  RegisterCredentials,
+  { rejectValue: string }
+>("auth/register", async (credentials, thunkAPI) => {
+  try {
+    return await authService.register(credentials);
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(
+      getErrorMessage(error, "Registration failed."),
+    );
+  }
+});
+
+export const login = createAsyncThunk<
+  AuthResponse,
+  LoginCredentials,
+  { rejectValue: string }
+>("auth/login", async (credentials, thunkAPI) => {
+  try {
+    return await authService.login(credentials);
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, "Login failed."));
+  }
+});
+
+export const getMe = createAsyncThunk<
+  AuthResponse,
+  void,
+  { rejectValue: string }
+>("auth/getMe", async (_, thunkAPI) => {
+  try {
+    return await authService.getMe();
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(
+      getErrorMessage(error, "Failed to fetch user."),
+    );
+  }
+});
+
+export const logout = createAsyncThunk<
+  { success: boolean; message: string },
+  void,
+  { rejectValue: string }
+>("auth/logout", async (_, thunkAPI) => {
+  try {
+    return await authService.logout();
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, "Logout failed."));
+  }
+});
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(register.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.data;
+        state.isAuthenticated = true;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Registration failed.";
+      })
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.data;
+        state.isAuthenticated = true;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Login failed.";
+      })
+      .addCase(getMe.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.data;
+        state.isAuthenticated = true;
+        state.isInitialized = true;
+      })
+      .addCase(getMe.rejected, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isInitialized = true;
+      })
+      .addCase(logout.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Logout failed.";
+      });
+  },
 });
-
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
