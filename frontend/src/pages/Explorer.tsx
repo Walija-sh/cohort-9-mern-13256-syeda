@@ -1,5 +1,5 @@
 import { ArrowLeft, Plus } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import FolderCard from "@/components/folders/FolderCard";
@@ -22,6 +22,7 @@ function Explorer() {
   const { folderId } = useParams<{ folderId: string }>();
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const explorerRequestId = useRef(0);
 
   const {
     folders,
@@ -40,13 +41,23 @@ function Explorer() {
   const error = folderError || noteError;
 
   const loadExplorer = useCallback(async () => {
+    const requestId = ++explorerRequestId.current;
+
     dispatch(clearNotes());
 
     try {
       const result = await dispatch(getExplorerContents(folderId)).unwrap();
 
+      if (requestId !== explorerRequestId.current) {
+        return;
+      }
+
       dispatch(setNotes(result.data.notes));
     } catch {
+      if (requestId !== explorerRequestId.current) {
+        return;
+      }
+
       // rejection already captured in redux
     }
   }, [dispatch, folderId]);

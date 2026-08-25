@@ -108,6 +108,8 @@ const noteSlice = createSlice({
     clearCurrentNote: (state) => {
       state.currentNote = null;
       state.currentNoteRequestId = null;
+      state.isLoading = false;
+      state.error = null;
     },
     setNotes: (state, action: PayloadAction<Note[]>) => {
       state.notes = action.payload;
