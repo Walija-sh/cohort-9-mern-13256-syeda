@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -82,7 +82,6 @@ function Explorer() {
 
   return (
     <section className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-semibold tracking-tight">
@@ -98,10 +97,7 @@ function Explorer() {
 
         <div className="flex flex-wrap gap-2">
           {!currentFolder && (
-            <Button
-              variant="outline"
-              onClick={() => setFolderDialogOpen(true)}
-            >
+            <Button variant="outline" onClick={() => setFolderDialogOpen(true)}>
               <Plus className="size-4" />
               New Folder
             </Button>
@@ -114,32 +110,24 @@ function Explorer() {
         </div>
       </div>
 
-      {/* Create Folder Dialog */}
       <FolderDialog
         open={folderDialogOpen}
         onOpenChange={setFolderDialogOpen}
       />
 
-      {/* Back button when inside a folder */}
       {currentFolder && (
-        <Button
-          variant="ghost"
-          className="-ml-2"
-          onClick={handleBack}
-        >
-          <span aria-hidden="true">&larr;</span>
-          Back to notes
+        <Button variant="ghost" className="-ml-2" onClick={handleBack}>
+          <ArrowLeft className="size-4" />
+          Back
         </Button>
       )}
 
-      {/* Loading */}
       {isLoading && (
         <div className="py-12 text-center text-sm text-muted-foreground">
           Loading...
         </div>
       )}
 
-      {/* Error */}
       {!isLoading && error && (
         <Card className="border-destructive/30">
           <CardContent className="p-6 text-center">
@@ -159,7 +147,6 @@ function Explorer() {
 
       {!isLoading && !error && (
         <>
-          {/* Root folders */}
           {!currentFolder && (
             <section className="space-y-4">
               <div>
@@ -177,14 +164,11 @@ function Explorer() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  No folders yet.
-                </p>
+                <p className="text-sm text-muted-foreground">No folders yet.</p>
               )}
             </section>
           )}
 
-          {/* Notes */}
           <section className="space-y-4">
             <div>
               <h2 className="text-sm font-semibold">Notes</h2>
@@ -210,10 +194,7 @@ function Explorer() {
                       : "You don't have any notes yet."}
                   </p>
 
-                  <Button
-                    className="mt-4"
-                    onClick={handleCreateNote}
-                  >
+                  <Button className="mt-4" onClick={handleCreateNote}>
                     <Plus className="size-4" />
                     Create note
                   </Button>

@@ -46,7 +46,6 @@ function FolderCard({ folder, onClick }: FolderCardProps) {
     <>
       <Card className="transition-colors hover:border-primary/40">
         <CardContent className="flex items-center gap-3 p-4">
-          {/* Clickable folder area */}
           <div
             role="button"
             tabIndex={0}
@@ -69,8 +68,6 @@ function FolderCard({ folder, onClick }: FolderCardProps) {
               <p className="mt-0.5 text-xs text-muted-foreground">Folder</p>
             </div>
           </div>
-
-          {/* Actions are outside the clickable area */}
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
