@@ -58,34 +58,33 @@ function NoteEditorForm({
       return;
     }
 
-    if (isEditing && noteId) {
-      const result = await dispatch(
-        updateNote({
-          id: noteId,
-          payload: {
-            title: trimmedTitle,
-            content,
-          },
-        }),
-      );
+    try {
+      if (isEditing && noteId) {
+        await dispatch(
+          updateNote({
+            id: noteId,
+            payload: {
+              title: trimmedTitle,
+              content,
+            },
+          }),
+        ).unwrap();
 
-      if (updateNote.fulfilled.match(result)) {
         navigate(`/dashboard/notes/${noteId}`);
+        return;
       }
 
-      return;
-    }
+      const result = await dispatch(
+        createNote({
+          title: trimmedTitle,
+          content,
+          parentFolder: folderId ?? null,
+        }),
+      ).unwrap();
 
-    const result = await dispatch(
-      createNote({
-        title: trimmedTitle,
-        content,
-        parentFolder: folderId ?? null,
-      }),
-    );
-
-    if (createNote.fulfilled.match(result)) {
-      navigate(`/dashboard/notes/${result.payload._id}`);
+      navigate(`/dashboard/notes/${result._id}`);
+    } catch {
+      // rejection already captured in redux
     }
   };
 
@@ -97,10 +96,7 @@ function NoteEditorForm({
           Cancel
         </Button>
 
-        <Button
-          onClick={handleSave}
-          disabled={isLoading || !title.trim()}
-        >
+        <Button onClick={handleSave} disabled={isLoading || !title.trim()}>
           <Save className="size-4" />
           {isLoading ? "Saving..." : "Save"}
         </Button>
@@ -116,18 +112,12 @@ function NoteEditorForm({
         />
 
         {error && (
-          <p
-            className="text-sm text-destructive"
-            role="alert"
-          >
+          <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
 
-        <NoteEditorInput
-          content={content}
-          onChange={setContent}
-        />
+        <NoteEditorInput content={content} onChange={setContent} />
       </div>
     </section>
   );

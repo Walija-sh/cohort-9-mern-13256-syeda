@@ -10,6 +10,7 @@ import { getErrorMessage } from "@/utils/getErrorMessage";
 interface NoteState {
   notes: Note[];
   currentNote: Note | null;
+  currentNoteRequestId: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -17,6 +18,7 @@ interface NoteState {
 const initialState: NoteState = {
   notes: [],
   currentNote: null,
+  currentNoteRequestId: null,
   isLoading: false,
   error: null,
 };
@@ -105,6 +107,7 @@ const noteSlice = createSlice({
     },
     clearCurrentNote: (state) => {
       state.currentNote = null;
+      state.currentNoteRequestId = null;
     },
     setNotes: (state, action: PayloadAction<Note[]>) => {
       state.notes = action.payload;
@@ -141,18 +144,28 @@ const noteSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload || "Failed to fetch notes.";
       })
-
-      .addCase(getNoteById.pending, (state) => {
+      .addCase(getNoteById.pending, (state, action) => {
         state.isLoading = true;
         state.error = null;
+        state.currentNoteRequestId = action.meta.requestId;
       })
       .addCase(getNoteById.fulfilled, (state, action) => {
+        if (state.currentNoteRequestId !== action.meta.requestId) {
+          return;
+        }
+
         state.isLoading = false;
         state.currentNote = action.payload;
+        state.currentNoteRequestId = null;
       })
       .addCase(getNoteById.rejected, (state, action) => {
+        if (state.currentNoteRequestId !== action.meta.requestId) {
+          return;
+        }
+
         state.isLoading = false;
         state.error = action.payload || "Failed to fetch note.";
+        state.currentNoteRequestId = null;
       })
 
       .addCase(updateNote.pending, (state) => {

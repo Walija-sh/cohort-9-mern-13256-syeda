@@ -35,10 +35,11 @@ function FolderCard({ folder, onClick }: FolderCardProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleDelete = async () => {
-    const result = await dispatch(deleteFolder(folder._id));
-
-    if (deleteFolder.fulfilled.match(result)) {
+    try {
+      await dispatch(deleteFolder(folder._id)).unwrap();
       setIsDeleteOpen(false);
+    } catch {
+      // rejection already captured in redux
     }
   };
 

@@ -49,11 +49,13 @@ function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
   const noteColor = NOTE_COLORS[colorIndex];
 
   const handleDelete = async () => {
-    const result = await dispatch(deleteNote(note._id));
+    try {
+      await dispatch(deleteNote(note._id)).unwrap();
 
-    if (deleteNote.fulfilled.match(result)) {
       setIsDeleteOpen(false);
       onChanged?.();
+    } catch {
+      // rejection already captured in redux
     }
   };
 
@@ -68,81 +70,78 @@ function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
   return (
     <>
       <Card
-        className={`group relative cursor-pointer overflow-hidden rounded-none transition-all hover:shadow-md ${noteColor}`}
-        onClick={handleCardClick}
+        className={`group relative overflow-hidden rounded-none transition-all hover:shadow-md ${noteColor}`}
       >
-        <CardContent className="flex flex-col p-5">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="line-clamp-3 min-w-0 flex-1 text-lg font-semibold group-hover:text-primary">
-              {note.title}
-            </h3>
+        <CardContent className="flex p-5">
+          <div
+            role="button"
+            tabIndex={0}
+            className="flex flex-1 cursor-pointer flex-col"
+            onClick={handleCardClick}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                handleCardClick();
+              }
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="line-clamp-3 min-w-0 flex-1 text-lg font-semibold group-hover:text-primary">
+                {note.title}
+              </h3>
+            </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                aria-label={`Actions for ${note.title}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                }}
-              >
-                <MoreVertical className="size-4" />
-              </DropdownMenuTrigger>
+            <div className="flex-1" />
 
-              <DropdownMenuContent
-                align="end"
-                onClick={(event) => {
-                  event.stopPropagation();
-                }}
-              >
-                <DropdownMenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    handleEdit();
-                  }}
-                >
-                  <Pencil className="size-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setIsMoveOpen(true);
-                  }}
-                >
-                  <FolderInput className="size-4" />
-                  Move to folder
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setIsDeleteOpen(true);
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <p className="text-xs text-muted-foreground">
+              [
+              {new Date(note.updatedAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+              ]
+            </p>
           </div>
 
-          <div className="flex-1" />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground ml-auto"
+              aria-label={`Actions for ${note.title}`}
+            >
+              <MoreVertical className="size-4" />
+            </DropdownMenuTrigger>
 
-          <p className="text-xs text-muted-foreground">
-            [
-            {new Date(note.updatedAt).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-            ]
-          </p>
+            <DropdownMenuContent
+              align="end"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              <DropdownMenuItem onClick={handleEdit}>
+                <Pencil className="size-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsMoveOpen(true)}>
+                <FolderInput className="size-4" />
+                Move to folder
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <Trash2 className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardContent>
       </Card>
+
       {isMoveOpen && (
         <MoveNoteDialog
           note={note}

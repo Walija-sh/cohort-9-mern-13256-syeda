@@ -47,32 +47,31 @@ function FolderDialogForm({ folder, open, onOpenChange }: FolderDialogProps) {
       return;
     }
 
-    if (folder) {
-      const result = await dispatch(
-        updateFolder({
-          id: folder._id,
-          payload: {
-            name: trimmedName,
-          },
-        }),
-      );
+    try {
+      if (folder) {
+        await dispatch(
+          updateFolder({
+            id: folder._id,
+            payload: {
+              name: trimmedName,
+            },
+          }),
+        ).unwrap();
 
-      if (updateFolder.fulfilled.match(result)) {
         onOpenChange(false);
+        return;
       }
 
-      return;
-    }
+      await dispatch(
+        createFolder({
+          name: trimmedName,
+        }),
+      ).unwrap();
 
-    const result = await dispatch(
-      createFolder({
-        name: trimmedName,
-      }),
-    );
-
-    if (createFolder.fulfilled.match(result)) {
       onOpenChange(false);
       setName("");
+    } catch {
+      // rejection already captured in redux
     }
   };
 

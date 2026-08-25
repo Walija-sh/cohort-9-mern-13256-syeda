@@ -42,10 +42,12 @@ function Explorer() {
   const loadExplorer = useCallback(async () => {
     dispatch(clearNotes());
 
-    const result = await dispatch(getExplorerContents(folderId));
+    try {
+      const result = await dispatch(getExplorerContents(folderId)).unwrap();
 
-    if (getExplorerContents.fulfilled.match(result)) {
-      dispatch(setNotes(result.payload.data.notes));
+      dispatch(setNotes(result.data.notes));
+    } catch {
+      // rejection already captured in redux
     }
   }, [dispatch, folderId]);
 

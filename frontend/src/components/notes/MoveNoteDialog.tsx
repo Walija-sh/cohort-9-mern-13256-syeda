@@ -45,18 +45,20 @@ function MoveNoteDialog({
   }, [open, note.parentFolder, folders.length, dispatch]);
 
   const handleMove = async () => {
-    const result = await dispatch(
-      updateNote({
-        id: note._id,
-        payload: {
-          parentFolder: selectedFolder || null,
-        },
-      }),
-    );
+    try {
+      await dispatch(
+        updateNote({
+          id: note._id,
+          payload: {
+            parentFolder: selectedFolder || null,
+          },
+        }),
+      ).unwrap();
 
-    if (updateNote.fulfilled.match(result)) {
       onOpenChange(false);
       onMoved?.();
+    } catch {
+      // rejection already captured in redux
     }
   };
 
