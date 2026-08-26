@@ -12,6 +12,7 @@ import { getErrorMessage } from "@/utils/getErrorMessage";
 interface FolderState {
   folders: Folder[];
   currentFolder: Folder | null;
+  explorerRequestId: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -19,6 +20,7 @@ interface FolderState {
 const initialState: FolderState = {
   folders: [],
   currentFolder: null,
+  explorerRequestId: null,
   isLoading: false,
   error: null,
 };
@@ -207,11 +209,16 @@ const folderSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload || "Failed to delete folder.";
       })
-      .addCase(getExplorerContents.pending, (state) => {
+      .addCase(getExplorerContents.pending, (state, action) => {
         state.isLoading = true;
         state.error = null;
+        state.explorerRequestId = action.meta.requestId;
       })
       .addCase(getExplorerContents.fulfilled, (state, action) => {
+        if (state.explorerRequestId !== action.meta.requestId) {
+          return;
+        }
+
         state.isLoading = false;
 
         if ("folder" in action.payload.data) {
@@ -221,10 +228,17 @@ const folderSlice = createSlice({
           state.currentFolder = null;
           state.folders = action.payload.data.folders;
         }
+
+        state.explorerRequestId = null;
       })
       .addCase(getExplorerContents.rejected, (state, action) => {
+        if (state.explorerRequestId !== action.meta.requestId) {
+          return;
+        }
+
         state.isLoading = false;
         state.error = action.payload || "Failed to fetch explorer contents.";
+        state.explorerRequestId = null;
       });
   },
 });

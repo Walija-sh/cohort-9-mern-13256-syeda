@@ -44,6 +44,7 @@ function Explorer() {
     const requestId = ++explorerRequestId.current;
 
     dispatch(clearNotes());
+    dispatch(clearNoteError());
 
     try {
       const result = await dispatch(getExplorerContents(folderId)).unwrap();
