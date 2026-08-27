@@ -1,0 +1,23 @@
+{
+  "name": "cohort-9-mern-13256-syeda",
+  "version": "1.0.0",
+  "description": "Cohort 9 — MERN (NodeJS+ReactJS) assignment for Syeda Walija Hassan",
+  "main": "index.js",
+  "scripts": {
+    "sonar": "sonar-scanner-npm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Walija-sh/cohort-9-mern-13256-syeda.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Walija-sh/cohort-9-mern-13256-syeda/issues"
+  },
+  "homepage": "https://github.com/Walija-sh/cohort-9-mern-13256-syeda#readme",
+  "devDependencies": {
+    "@sonar/scan": "^5.0.0"
+  }
+}
