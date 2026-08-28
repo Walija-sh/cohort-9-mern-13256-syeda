@@ -73,17 +73,10 @@ function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
         className={`group relative overflow-hidden rounded-none transition-all hover:shadow-md ${noteColor}`}
       >
         <CardContent className="flex p-5">
-          <div
-            role="button"
-            tabIndex={0}
-            className="flex flex-1 cursor-pointer flex-col"
+          <button
+            type="button"
+            className="flex flex-1 cursor-pointer flex-col text-left"
             onClick={handleCardClick}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                handleCardClick();
-              }
-            }}
           >
             <div className="flex items-start justify-between gap-3">
               <h3 className="line-clamp-3 min-w-0 flex-1 text-lg font-semibold group-hover:text-primary">
@@ -102,7 +95,7 @@ function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
               })}
               ]
             </p>
-          </div>
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger

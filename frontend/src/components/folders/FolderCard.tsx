@@ -47,17 +47,10 @@ function FolderCard({ folder, onClick }: FolderCardProps) {
     <>
       <Card className="transition-colors hover:border-primary/40">
         <CardContent className="flex items-center gap-3 p-4">
-          <div
-            role="button"
-            tabIndex={0}
-            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 outline-none"
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left outline-none"
             onClick={() => onClick(folder)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onClick(folder);
-              }
-            }}
           >
             <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
               <FolderIcon className="size-4" />
@@ -68,7 +61,7 @@ function FolderCard({ folder, onClick }: FolderCardProps) {
 
               <p className="mt-0.5 text-xs text-muted-foreground">Folder</p>
             </div>
-          </div>
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={

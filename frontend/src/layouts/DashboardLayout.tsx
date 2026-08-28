@@ -1,12 +1,4 @@
-import {
-  FileText,
-  LogOut,
-  Menu,
-  Moon,
-  Plus,
-  Sun,
-  X,
-} from "lucide-react";
+import { FileText, LogOut, Menu, Moon, Plus, Sun, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
 
@@ -27,7 +19,7 @@ function DashboardLayout() {
     document.documentElement.classList.contains("dark"),
   );
 
-  const asideRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLDialogElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -198,15 +190,14 @@ function DashboardLayout() {
             className="fixed inset-0 z-40 bg-black/50 md:hidden"
             onClick={closeMobileMenu}
           />
-          <aside
+          <dialog
             ref={asideRef}
-            role="dialog"
-            aria-modal="true"
             aria-label="Navigation menu"
-            className="fixed inset-y-0 left-0 z-50 flex w-70 max-w-[85vw] flex-col border-r bg-card shadow-xl md:hidden"
+            open
+            className="m-0 h-screen max-h-none w-70 max-w-[85vw] border-0 bg-card p-0 shadow-xl md:hidden fixed inset-y-0 left-0 z-50 flex flex-col"
           >
             {sidebarContent}
-          </aside>
+          </dialog>
         </>
       )}
 

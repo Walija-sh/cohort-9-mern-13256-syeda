@@ -39,6 +39,11 @@ function FolderDialogForm({ folder, open, onOpenChange }: FolderDialogProps) {
   const [name, setName] = useState(folder?.name ?? "");
 
   const isEditing = Boolean(folder);
+  let submitButtonText = isEditing ? "Save changes" : "Create folder";
+
+  if (isLoading) {
+    submitButtonText = isEditing ? "Saving..." : "Creating...";
+  }
 
   const handleSubmit = async () => {
     const trimmedName = name.trim();
@@ -122,13 +127,7 @@ function FolderDialogForm({ folder, open, onOpenChange }: FolderDialogProps) {
           </Button>
 
           <Button onClick={handleSubmit} disabled={isLoading || !name.trim()}>
-            {isLoading
-              ? isEditing
-                ? "Saving..."
-                : "Creating..."
-              : isEditing
-                ? "Save changes"
-                : "Create folder"}
+            {submitButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>
