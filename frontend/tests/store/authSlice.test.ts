@@ -5,8 +5,8 @@ import reducer, {
   login,
   logout,
   register,
-} from "../../src/store/authSlice";
-import type { User } from "../../src/types/auth";
+} from "@/store/authSlice";
+import type { User } from "@/types/auth";
 
 const createMockUser = (overrides: Partial<User> = {}): User => ({
   id: "user-1",

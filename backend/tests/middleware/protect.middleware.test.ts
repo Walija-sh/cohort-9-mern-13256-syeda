@@ -139,6 +139,6 @@ describe("protect", () => {
 
     expect(req.user).to.equal(user);
     expect(next.calledOnce).to.equal(true);
-    expect(next.firstCall.args[0]).to.equal(undefined);
+    expect(next.firstCall.args[0]).to.be.undefined;
   });
 });

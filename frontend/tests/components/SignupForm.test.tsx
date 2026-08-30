@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import SignupForm from "@/components/auth/SignupForm";
 import { register } from "@/store/authSlice";
 
-// ---------- mocks ----------
-
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
 const mockNavigate = vi.fn();
@@ -39,8 +37,6 @@ vi.mock("@/store/authSlice", async () => {
     register: vi.fn(),
   };
 });
-
-// ---------- helpers ----------
 
 const renderSignupForm = () => {
   return render(

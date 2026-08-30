@@ -8,9 +8,9 @@ import reducer, {
   getExplorerContents,
   getFolderById,
   updateFolder,
-} from "../../src/store/folderSlice";
-import type { Folder } from "../../src/types/folder";
-import type { Note } from "../../src/types/note";
+} from "@/store/folderSlice";
+import type { Folder } from "@/types/folder";
+import type { Note } from "@/types/note";
 
 const createMockFolder = (overrides: Partial<Folder> = {}): Folder => ({
   _id: "folder-1",

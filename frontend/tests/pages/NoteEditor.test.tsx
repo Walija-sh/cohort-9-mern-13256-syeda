@@ -1,15 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import NoteEditor from "../../src/pages/NoteEditor";
+import NoteEditor from "@/pages/NoteEditor";
 import {
   clearCurrentNote,
   createNote,
   getNoteById,
   updateNote,
-} from "../../src/store/noteSlice";
-
-// ---------- mocks ----------
+} from "@/store/noteSlice";
 
 const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
@@ -33,7 +31,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("@/store/noteSlice", async () => {
   const actual =
-    await vi.importActual<typeof import("../../src/store/noteSlice")>(
+    await vi.importActual<typeof import("@/store/noteSlice")>(
       "@/store/noteSlice",
     );
 
@@ -76,8 +74,6 @@ vi.mock("@/components/notes/NoteEditor", () => ({
     </div>
   ),
 }));
-
-// ---------- tests ----------
 
 describe("NoteEditor", () => {
   const note = {

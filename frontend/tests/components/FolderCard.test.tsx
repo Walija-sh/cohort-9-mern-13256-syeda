@@ -5,8 +5,6 @@ import FolderCard from "@/components/folders/FolderCard";
 import { deleteFolder } from "@/store/folderSlice";
 import type { Folder } from "@/types/folder";
 
-// ---------- mocks ----------
-
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
 

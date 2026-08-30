@@ -6,13 +6,11 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import MoveNoteDialog from "../../src/components/notes/MoveNoteDialog";
-import { getAllFolders } from "../../src/store/folderSlice";
-import { updateNote } from "../../src/store/noteSlice";
-import type { Folder } from "../../src/types/folder";
-import type { Note } from "../../src/types/note";
-
-// ---------- mocks ----------
+import MoveNoteDialog from "@/components/notes/MoveNoteDialog";
+import { getAllFolders } from "@/store/folderSlice";
+import { updateNote } from "@/store/noteSlice";
+import type { Folder } from "@/types/folder";
+import type { Note } from "@/types/note";
 
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
@@ -35,7 +33,7 @@ vi.mock("@/store/hooks", () => ({
 
 vi.mock("@/store/folderSlice", async () => {
   const actual =
-    await vi.importActual<typeof import("../../src/store/folderSlice")>(
+    await vi.importActual<typeof import("@/store/folderSlice")>(
       "@/store/folderSlice",
     );
 
@@ -47,7 +45,7 @@ vi.mock("@/store/folderSlice", async () => {
 
 vi.mock("@/store/noteSlice", async () => {
   const actual =
-    await vi.importActual<typeof import("../../src/store/noteSlice")>(
+    await vi.importActual<typeof import("@/store/noteSlice")>(
       "@/store/noteSlice",
     );
 
@@ -125,8 +123,6 @@ vi.mock("@/components/ui/button", () => ({
   ),
 }));
 
-// ---------- test data ----------
-
 const folder1: Folder = {
   _id: "folder-1",
   name: "Work",
@@ -152,8 +148,6 @@ const note: Note = {
   createdAt: "2026-08-10T00:00:00.000Z",
   updatedAt: "2026-08-10T00:00:00.000Z",
 };
-
-// ---------- helpers ----------
 
 const renderDialog = (
   props: Partial<React.ComponentProps<typeof MoveNoteDialog>> = {},

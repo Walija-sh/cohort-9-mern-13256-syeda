@@ -39,7 +39,7 @@ function NoteEditorForm({
   initialContent,
   isLoading,
   error,
-}: NoteEditorFormProps) {
+}: Readonly<NoteEditorFormProps>) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 

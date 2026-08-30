@@ -8,8 +8,7 @@ import NoteCard from "@/components/notes/NoteCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { getExplorerContents } from "@/store/folderSlice";
-import { clearError as clearFolderError } from "@/store/folderSlice";
+import { clearError as clearFolderError,getExplorerContents, } from "@/store/folderSlice";
 import {
   clearError as clearNoteError,
   clearNotes,

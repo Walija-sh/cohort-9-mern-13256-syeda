@@ -1,10 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import NoteCard from "../../src/components/notes/NoteCard";
-import { deleteNote } from "../../src/store/noteSlice";
-
-// ---------- mocks ----------
+import NoteCard from "@/components/notes/NoteCard";
+import { deleteNote } from "@/store/noteSlice";
 
 const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
@@ -21,7 +19,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("@/store/noteSlice", async () => {
   const actual =
-    await vi.importActual<typeof import("../../src/store/noteSlice")>(
+    await vi.importActual<typeof import("@/store/noteSlice")>(
       "@/store/noteSlice",
     );
 

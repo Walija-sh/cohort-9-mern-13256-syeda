@@ -14,7 +14,7 @@ const extensions = [
   }),
 ];
 
-function NoteContent({ content }: NoteContentProps) {
+function NoteContent({ content }: Readonly<NoteContentProps>) {
   return (
     <div className="tiptap">
       {renderToReactElement({

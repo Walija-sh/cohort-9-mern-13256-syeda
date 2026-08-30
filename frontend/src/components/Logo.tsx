@@ -18,7 +18,7 @@ const sizeConfig = {
   },
 };
 
-function Logo({ size = "sm", className = "" }: LogoProps) {
+function Logo({ size = "sm", className = "" }: Readonly<LogoProps>) {
   const config = sizeConfig[size];
 
   return (

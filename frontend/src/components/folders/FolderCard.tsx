@@ -26,7 +26,7 @@ interface FolderCardProps {
   onClick: (folder: Folder) => void;
 }
 
-function FolderCard({ folder, onClick }: FolderCardProps) {
+function FolderCard({ folder, onClick }: Readonly<FolderCardProps>) {
   const dispatch = useAppDispatch();
 
   const { isLoading } = useAppSelector((state) => state.folders);

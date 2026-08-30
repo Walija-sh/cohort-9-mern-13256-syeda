@@ -2,11 +2,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 
-import FolderDialog from "../../src/components/folders/FolderDialog";
-import { createFolder, updateFolder } from "../../src/store/folderSlice";
-import type { Folder } from "../../src/types/folder";
-
-// ---------- mocks ----------
+import FolderDialog from "@/components/folders/FolderDialog";
+import { createFolder, updateFolder } from "@/store/folderSlice";
+import type { Folder } from "@/types/folder";
 
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();

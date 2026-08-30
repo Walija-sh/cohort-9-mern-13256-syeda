@@ -29,7 +29,7 @@ function ConfirmDialog({
   confirmLabel = "Delete",
   isLoading = false,
   onConfirm,
-}: ConfirmDialogProps) {
+}: Readonly<ConfirmDialogProps>) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>

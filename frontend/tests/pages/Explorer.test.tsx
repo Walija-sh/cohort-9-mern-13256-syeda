@@ -1,11 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import Explorer from "../../src/pages/Explorer";
-import { getExplorerContents } from "../../src/store/folderSlice";
-import { setNotes } from "../../src/store/noteSlice";
-
-// ---------- mocks ----------
+import Explorer from "@/pages/Explorer";
+import { getExplorerContents } from "@/store/folderSlice";
+import { setNotes } from "@/store/noteSlice";
 
 const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
@@ -48,7 +46,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("@/store/folderSlice", async () => {
   const actual = await vi.importActual<
-    typeof import("../../src/store/folderSlice")
+    typeof import("@/store/folderSlice")
   >("@/store/folderSlice");
 
   return {
@@ -59,7 +57,7 @@ vi.mock("@/store/folderSlice", async () => {
 
 vi.mock("@/store/noteSlice", async () => {
   const actual =
-    await vi.importActual<typeof import("../../src/store/noteSlice")>(
+    await vi.importActual<typeof import("@/store/noteSlice")>(
       "@/store/noteSlice",
     );
 

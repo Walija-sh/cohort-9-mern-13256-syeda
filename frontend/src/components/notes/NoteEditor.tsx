@@ -10,7 +10,7 @@ interface NoteEditorProps {
   onChange: (content: JSONContent) => void;
 }
 
-function NoteEditor({ content, onChange }: NoteEditorProps) {
+function NoteEditor({ content, onChange }: Readonly<NoteEditorProps>) {
   const editor = useEditor({
     extensions: [
       StarterKit,

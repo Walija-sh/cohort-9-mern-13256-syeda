@@ -9,8 +9,8 @@ import reducer, {
   getNoteById,
   setNotes,
   updateNote,
-} from "../../src/store/noteSlice";
-import type { Note } from "../../src/types/note";
+} from "@/store/noteSlice";
+import type { Note } from "@/types/note";
 
 const createMockNote = (overrides: Partial<Note> = {}): Note => ({
   _id: "note-1",

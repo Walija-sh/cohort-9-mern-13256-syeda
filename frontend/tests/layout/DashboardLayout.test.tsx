@@ -2,19 +2,19 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import DashboardLayout from "../../src/layouts/DashboardLayout";
+import DashboardLayout from "@/layouts/DashboardLayout";
 
 const mockDispatch = vi.fn();
 
-vi.mock("../../src/store/hooks", () => ({
+vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
 }));
 
-vi.mock("../../src/store/authSlice", () => ({
+vi.mock("@/store/authSlice", () => ({
   logout: () => ({ type: "auth/logout" }),
 }));
 
-vi.mock("../../src/components/Logo", () => ({
+vi.mock("@/components/Logo", () => ({
   default: () => <div>Logo</div>,
 }));
 

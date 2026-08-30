@@ -33,7 +33,7 @@ const NOTE_COLORS = [
   "bg-orange-100 dark:bg-orange-900/40",
 ];
 
-function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
+function NoteCard({ note, onClick, onChanged }: Readonly<NoteCardProps>) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -43,7 +43,7 @@ function NoteCard({ note, onClick, onChanged }: NoteCardProps) {
   const [isMoveOpen, setIsMoveOpen] = useState(false);
 
   const colorIndex =
-    note._id.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) %
+    note._id.split("").reduce((sum, char) => sum + char.codePointAt(0)!, 0) %
     NOTE_COLORS.length;
 
   const noteColor = NOTE_COLORS[colorIndex];

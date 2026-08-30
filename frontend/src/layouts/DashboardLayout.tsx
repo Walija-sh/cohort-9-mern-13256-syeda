@@ -35,7 +35,7 @@ function DashboardLayout() {
       asideEl.querySelectorAll<HTMLElement>(focusableSelector),
     );
     const firstEl = focusableEls[0];
-    const lastEl = focusableEls[focusableEls.length - 1];
+    const lastEl = focusableEls.at(-1);
 
     firstEl?.focus();
 

@@ -26,7 +26,7 @@ function MoveNoteDialog({
   open,
   onOpenChange,
   onMoved,
-}: MoveNoteDialogProps) {
+}: Readonly<MoveNoteDialogProps>) {
   const dispatch = useAppDispatch();
 
   const { folders } = useAppSelector((state) => state.folders);

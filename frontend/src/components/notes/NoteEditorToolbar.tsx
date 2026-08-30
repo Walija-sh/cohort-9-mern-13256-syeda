@@ -20,7 +20,7 @@ interface NoteEditorToolbarProps {
   editor: Editor;
 }
 
-function NoteEditorToolbar({ editor }: NoteEditorToolbarProps) {
+function NoteEditorToolbar({ editor }: Readonly<NoteEditorToolbarProps>) {
   return (
     <div className="flex flex-wrap items-center gap-1 border-b bg-muted/30 p-2">
       <Button

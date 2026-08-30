@@ -20,7 +20,7 @@ interface FolderDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function FolderDialog({ folder, open, onOpenChange }: FolderDialogProps) {
+function FolderDialog({ folder, open, onOpenChange }: Readonly<FolderDialogProps>) {
   return (
     <FolderDialogForm
       key={`${folder?._id ?? "create"}-${open}`}
@@ -31,7 +31,7 @@ function FolderDialog({ folder, open, onOpenChange }: FolderDialogProps) {
   );
 }
 
-function FolderDialogForm({ folder, open, onOpenChange }: FolderDialogProps) {
+function FolderDialogForm({ folder, open, onOpenChange }: Readonly<FolderDialogProps>) {
   const dispatch = useAppDispatch();
 
   const { isLoading, error } = useAppSelector((state) => state.folders);
