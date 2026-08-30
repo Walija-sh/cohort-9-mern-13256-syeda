@@ -19,7 +19,8 @@ type MockRootState = {
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
+  useAppSelector: (selector: (state: MockRootState) => unknown) =>
+    mockUseAppSelector(selector),
 }));
 
 vi.mock("@/store/folderSlice", async () => {
@@ -50,6 +51,7 @@ vi.mock("@/components/folders/FolderDialog", () => ({
     open ? (
       <div data-testid="folder-dialog">
         <span>Rename folder: {folder.name}</span>
+
         <button type="button" onClick={() => onOpenChange(false)}>
           Close rename dialog
         </button>
@@ -158,14 +160,14 @@ describe("FolderCard", () => {
     vi.clearAllMocks();
 
     mockUseAppSelector.mockImplementation(
-  (selector: (state: MockRootState) => unknown) =>
-    selector({
-      folders: {
-        isLoading: false,
-        error: null,
-      },
-    }),
-);
+      (selector: (state: MockRootState) => unknown) =>
+        selector({
+          folders: {
+            isLoading: false,
+            error: null,
+          },
+        }),
+    );
 
     mockDispatch.mockImplementation(() => ({
       unwrap: vi.fn().mockResolvedValue({}),
@@ -206,7 +208,6 @@ describe("FolderCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Rename" }));
 
     expect(screen.getByTestId("folder-dialog")).toBeInTheDocument();
-
     expect(screen.getByText("Rename folder: Work")).toBeInTheDocument();
   });
 
@@ -260,7 +261,6 @@ describe("FolderCard", () => {
     });
 
     expect(mockDispatch).toHaveBeenCalledWith("delete-folder-action");
-
     expect(screen.queryByTestId("confirm-dialog")).not.toBeInTheDocument();
   });
 
@@ -288,14 +288,14 @@ describe("FolderCard", () => {
 
   it("disables delete confirmation while deletion is loading", () => {
     mockUseAppSelector.mockImplementation(
-  (selector: (state: MockRootState) => unknown) =>
-    selector({
-      folders: {
-        isLoading: true,
-        error: null,
-      },
-    }),
-);
+      (selector: (state: MockRootState) => unknown) =>
+        selector({
+          folders: {
+            isLoading: true,
+            error: null,
+          },
+        }),
+    );
 
     render(<FolderCard folder={folder} onClick={mockOnClick} />);
 

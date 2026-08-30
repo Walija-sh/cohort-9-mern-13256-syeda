@@ -9,11 +9,6 @@ const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
 const mockNavigate = vi.fn();
 
-let mockAuthState = {
-  isLoading: false,
-  error: null as string | null,
-};
-
 type MockAuthState = {
   auth: {
     isLoading: boolean;
