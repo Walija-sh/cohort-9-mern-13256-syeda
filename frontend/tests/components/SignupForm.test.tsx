@@ -9,35 +9,54 @@ const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
 const mockNavigate = vi.fn();
 
+let mockAuthState = {
+  isLoading: false,
+  error: null as string | null,
+};
+
+type MockAuthState = {
+  auth: {
+    isLoading: boolean;
+    error: string | null;
+  };
+};
+
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual =
-    await vi.importActual<typeof import("react-router-dom")>(
-      "react-router-dom",
-    );
+  try {
+    const actual =
+      await vi.importActual<typeof import("react-router-dom")>(
+        "react-router-dom",
+      );
 
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
+    return {
+      ...actual,
+      useNavigate: () => mockNavigate,
+    };
+  } catch (error) {
+    throw new Error("Failed to load react-router-dom mock", { cause: error });
+  }
 });
 
 vi.mock("@/store/authSlice", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/store/authSlice")>(
-      "@/store/authSlice",
-    );
+  try {
+    const actual =
+      await vi.importActual<typeof import("@/store/authSlice")>(
+        "@/store/authSlice",
+      );
 
-  return {
-    ...actual,
-    register: vi.fn(),
-  };
+    return {
+      ...actual,
+      register: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load authSlice mock", { cause: error });
+  }
 });
-
 const renderSignupForm = () => {
   return render(
     <MemoryRouter>
@@ -50,13 +69,14 @@ describe("SignupForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        auth: {
-          isLoading: false,
-          error: null,
-        },
-      }),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockAuthState) => unknown) =>
+        selector({
+          auth: {
+            isLoading: false,
+            error: null,
+          },
+        }),
     );
 
     mockDispatch.mockImplementation(() => ({
@@ -227,13 +247,14 @@ describe("SignupForm", () => {
   });
 
   it("shows the authentication error", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        auth: {
-          isLoading: false,
-          error: "Email is already registered.",
-        },
-      }),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockAuthState) => unknown) =>
+        selector({
+          auth: {
+            isLoading: false,
+            error: "Email is already registered.",
+          },
+        }),
     );
 
     renderSignupForm();
@@ -244,13 +265,14 @@ describe("SignupForm", () => {
   });
 
   it("shows the loading state while registration is in progress", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        auth: {
-          isLoading: true,
-          error: null,
-        },
-      }),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockAuthState) => unknown) =>
+        selector({
+          auth: {
+            isLoading: true,
+            error: null,
+          },
+        }),
     );
 
     renderSignupForm();

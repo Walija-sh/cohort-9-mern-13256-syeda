@@ -42,7 +42,7 @@ describe("folderSlice", () => {
     explorerRequestId: null,
     isLoading: false,
     error: null,
-  };
+  } satisfies ReturnType<typeof reducer>;
 
   describe("synchronous reducers", () => {
     it("returns the initial state", () => {

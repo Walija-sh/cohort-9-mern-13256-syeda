@@ -1,40 +1,29 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { NavigateFunction } from "react-router-dom";
 
 import Explorer from "@/pages/Explorer";
+import type { AppDispatch, RootState } from "@/store/store";
+import type { Folder } from "@/types/folder";
+import type { Note } from "@/types/note";
 import { getExplorerContents } from "@/store/folderSlice";
 import { setNotes } from "@/store/noteSlice";
 
-const mockDispatch = vi.fn();
-const mockNavigate = vi.fn();
-
-let mockState: {
-  folders: {
-    folders: Array<{ _id: string; name: string }>;
-    currentFolder: { _id: string; name: string } | null;
-    isLoading: boolean;
-    error: string | null;
-  };
-  notes: {
-    notes: Array<{
-      _id: string;
-      title: string;
-      content: { type: string; content: unknown[] };
-      owner: string;
-      parentFolder: string | null;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-    isLoading: boolean;
-    error: string | null;
-  };
+type MockDispatch = (action: Parameters<AppDispatch>[0]) => {
+  unwrap: () => Promise<unknown>;
 };
 
-const mockUseAppSelector = vi.fn();
+const mockDispatch = vi.fn<MockDispatch>();
+const mockNavigate = vi.fn<NavigateFunction>();
+
+let mockState: Pick<RootState, "folders" | "notes">;
+
+const mockUseAppSelector = vi.fn<<T>(selector: (state: RootState) => T) => T>();
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
+  useAppSelector: (selector: (state: RootState) => unknown) =>
+    mockUseAppSelector(selector),
 }));
 
 let mockFolderId: string | undefined;
@@ -45,9 +34,9 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("@/store/folderSlice", async () => {
-  const actual = await vi.importActual<
-    typeof import("@/store/folderSlice")
-  >("@/store/folderSlice");
+  const actual = await vi.importActual<typeof import("@/store/folderSlice")>(
+    "@/store/folderSlice",
+  );
 
   return {
     ...actual,
@@ -124,12 +113,15 @@ vi.mock("@/components/folders/FolderDialog", () => ({
 }));
 
 describe("Explorer", () => {
-  const folder = {
+  const folder: Folder = {
     _id: "folder-1",
     name: "Work",
+    owner: "user-1",
+    createdAt: "2026-08-29T00:00:00.000Z",
+    updatedAt: "2026-08-29T00:00:00.000Z",
   };
 
-  const note = {
+  const note : Note  = {
     _id: "note-1",
     title: "Test Note",
     content: {
@@ -150,17 +142,31 @@ describe("Explorer", () => {
       folders: {
         folders: [folder],
         currentFolder: null,
+        explorerRequestId: null,
         isLoading: false,
         error: null,
       },
       notes: {
         notes: [note],
+        currentNote: null,
+        currentNoteRequestId: null,
         isLoading: false,
         error: null,
       },
     };
 
-    mockUseAppSelector.mockImplementation((selector) => selector(mockState));
+    mockUseAppSelector.mockImplementation((selector) =>
+      selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
+        ...mockState,
+      }),
+    );
 
     mockDispatch.mockImplementation(() => ({
       unwrap: vi.fn().mockResolvedValue({

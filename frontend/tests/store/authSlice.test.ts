@@ -22,7 +22,7 @@ describe("authSlice", () => {
     isLoading: false,
     isInitialized: false,
     error: null,
-  };
+  } satisfies ReturnType<typeof reducer>;
 
   describe("clearError", () => {
     it("clears the authentication error", () => {
@@ -65,11 +65,7 @@ describe("authSlice", () => {
 
       const state = reducer(
         initialState,
-        register.fulfilled(
-          response,
-          "request-1",
-          credentials,
-        ),
+        register.fulfilled(response, "request-1", credentials),
       );
 
       expect(state.isLoading).toBe(false);
@@ -121,11 +117,7 @@ describe("authSlice", () => {
 
       const state = reducer(
         initialState,
-        login.fulfilled(
-          response,
-          "request-1",
-          credentials,
-        ),
+        login.fulfilled(response, "request-1", credentials),
       );
 
       expect(state.isLoading).toBe(false);
@@ -172,11 +164,7 @@ describe("authSlice", () => {
 
       const state = reducer(
         initialState,
-        getMe.fulfilled(
-          response,
-          "request-1",
-          undefined,
-        ),
+        getMe.fulfilled(response, "request-1", undefined),
       );
 
       expect(state.isLoading).toBe(false);
@@ -255,11 +243,7 @@ describe("authSlice", () => {
 
       const state = reducer(
         authenticatedState,
-        logout.fulfilled(
-          response,
-          "request-1",
-          undefined,
-        ),
+        logout.fulfilled(response, "request-1", undefined),
       );
 
       expect(state.isLoading).toBe(false);

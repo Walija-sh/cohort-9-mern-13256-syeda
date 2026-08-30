@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import LoginForm from "@/components/auth/LoginForm";
+import type { LoginCredentials } from "@/types/auth";
 
 const mockNavigate = vi.fn();
 const mockDispatch = vi.fn();
@@ -14,15 +15,19 @@ let mockAuthState = {
 };
 
 vi.mock("react-router-dom", async () => {
-  const actual =
-    await vi.importActual<typeof import("react-router-dom")>(
-      "react-router-dom",
-    );
+  try {
+    const actual =
+      await vi.importActual<typeof import("react-router-dom")>(
+        "react-router-dom",
+      );
 
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
+    return {
+      ...actual,
+      useNavigate: () => mockNavigate,
+    };
+  } catch (error) {
+    throw new Error("Failed to load react-router-dom mock", { cause: error });
+  }
 });
 
 vi.mock("@/store/hooks", () => ({
@@ -33,7 +38,7 @@ vi.mock("@/store/hooks", () => ({
 }));
 
 vi.mock("@/store/authSlice", () => ({
-  login: vi.fn((payload) => ({
+  login: vi.fn((payload: LoginCredentials) => ({
     type: "auth/login",
     payload,
   })),

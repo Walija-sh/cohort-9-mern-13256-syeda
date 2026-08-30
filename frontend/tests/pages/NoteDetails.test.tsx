@@ -1,18 +1,23 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { NavigateFunction } from "react-router-dom";
 
 import NoteDetails from "@/pages/NoteDetails";
+import type { AppDispatch, RootState } from "@/store/store";
 import { clearCurrentNote, getNoteById } from "@/store/noteSlice";
+import type { Note } from "@/types/note";
 
-const mockDispatch = vi.fn();
-const mockNavigate = vi.fn();
-const mockUseAppSelector = vi.fn();
+const mockDispatch = vi.fn<AppDispatch>();
+const mockNavigate = vi.fn<NavigateFunction>();
+const mockUseAppSelector = vi.fn<<T>(selector: (state: RootState) => T) => T>();
 
 let mockNoteId: string | undefined;
+let mockState: RootState;
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
+  useAppSelector: (selector: (state: RootState) => unknown) =>
+    mockUseAppSelector(selector),
 }));
 
 vi.mock("react-router-dom", () => ({
@@ -40,7 +45,7 @@ vi.mock("@/components/notes/NoteContent", () => ({
 }));
 
 describe("NoteDetails", () => {
-  const note = {
+  const note: Note = {
     _id: "note-1",
     title: "My Test Note",
     content: {
@@ -57,6 +62,9 @@ describe("NoteDetails", () => {
         },
       ],
     },
+    owner: "user-1",
+    parentFolder: null,
+    createdAt: "2026-08-29T00:00:00.000Z",
     updatedAt: "2026-08-29T00:00:00.000Z",
   };
 
@@ -65,17 +73,35 @@ describe("NoteDetails", () => {
 
     mockNoteId = "note-1";
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          currentNote: note,
-          isLoading: false,
-          error: null,
-        },
-      }),
-    );
+    mockState = {
+      auth: {
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: false,
+        error: null,
+      },
+      notes: {
+        currentNote: note,
+        currentNoteRequestId: null,
+        isLoading: false,
+        error: null,
+        notes: [],
+      },
+      folders: {
+        folders: [],
+        currentFolder: null,
+        explorerRequestId: null,
+        isLoading: false,
+        error: null,
+      },
+    };
 
-    mockDispatch.mockImplementation(() => undefined);
+    mockUseAppSelector.mockImplementation((selector) => selector(mockState));
+
+    mockDispatch.mockImplementation(() => ({
+      type: "mock/dispatch",
+    }));
 
     vi.mocked(getNoteById).mockReturnValue("getNoteById-action" as never);
 
@@ -135,15 +161,8 @@ describe("NoteDetails", () => {
   });
 
   it("shows the loading state", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          currentNote: null,
-          isLoading: true,
-          error: null,
-        },
-      }),
-    );
+    mockState.notes.currentNote = null;
+    mockState.notes.isLoading = true;
 
     render(<NoteDetails />);
 
@@ -155,15 +174,8 @@ describe("NoteDetails", () => {
   });
 
   it("shows the error state with a Back button", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          currentNote: null,
-          isLoading: false,
-          error: "Failed to load note",
-        },
-      }),
-    );
+    mockState.notes.currentNote = null;
+    mockState.notes.error = "Failed to load note";
 
     render(<NoteDetails />);
 
@@ -177,15 +189,7 @@ describe("NoteDetails", () => {
   });
 
   it("shows the not found state when there is no current note", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          currentNote: null,
-          isLoading: false,
-          error: null,
-        },
-      }),
-    );
+    mockState.notes.currentNote = null;
 
     render(<NoteDetails />);
 
@@ -219,16 +223,6 @@ describe("NoteDetails", () => {
 
   it("does not navigate to edit when the note id is missing", () => {
     mockNoteId = undefined;
-
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          currentNote: note,
-          isLoading: false,
-          error: null,
-        },
-      }),
-    );
 
     render(<NoteDetails />);
 

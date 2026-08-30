@@ -10,8 +10,12 @@ const mockUseAppSelector = vi.fn();
 
 const mockOnClick = vi.fn();
 
-const mockSetEditOpen = vi.fn();
-const mockSetDeleteOpen = vi.fn();
+type MockRootState = {
+  folders: {
+    isLoading: boolean;
+    error: string | null;
+  };
+};
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
@@ -19,14 +23,18 @@ vi.mock("@/store/hooks", () => ({
 }));
 
 vi.mock("@/store/folderSlice", async () => {
-  const actual = await vi.importActual<typeof import("@/store/folderSlice")>(
-    "@/store/folderSlice",
-  );
+  try {
+    const actual = await vi.importActual<typeof import("@/store/folderSlice")>(
+      "@/store/folderSlice",
+    );
 
-  return {
-    ...actual,
-    deleteFolder: vi.fn(),
-  };
+    return {
+      ...actual,
+      deleteFolder: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load folderSlice mock", { cause: error });
+  }
 });
 
 vi.mock("@/components/folders/FolderDialog", () => ({
@@ -149,14 +157,15 @@ describe("FolderCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        folders: {
-          isLoading: false,
-          error: null,
-        },
-      }),
-    );
+    mockUseAppSelector.mockImplementation(
+  (selector: (state: MockRootState) => unknown) =>
+    selector({
+      folders: {
+        isLoading: false,
+        error: null,
+      },
+    }),
+);
 
     mockDispatch.mockImplementation(() => ({
       unwrap: vi.fn().mockResolvedValue({}),
@@ -278,14 +287,15 @@ describe("FolderCard", () => {
   });
 
   it("disables delete confirmation while deletion is loading", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        folders: {
-          isLoading: true,
-          error: null,
-        },
-      }),
-    );
+    mockUseAppSelector.mockImplementation(
+  (selector: (state: MockRootState) => unknown) =>
+    selector({
+      folders: {
+        isLoading: true,
+        error: null,
+      },
+    }),
+);
 
     render(<FolderCard folder={folder} onClick={mockOnClick} />);
 

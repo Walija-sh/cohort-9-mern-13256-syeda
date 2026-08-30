@@ -3,8 +3,9 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DashboardLayout from "@/layouts/DashboardLayout";
+import type { AppDispatch } from "@/store/store";
 
-const mockDispatch = vi.fn();
+const mockDispatch = vi.fn<AppDispatch>();
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,

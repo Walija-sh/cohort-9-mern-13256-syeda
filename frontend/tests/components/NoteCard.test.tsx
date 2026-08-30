@@ -8,6 +8,12 @@ const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
 const mockUseAppSelector = vi.fn();
 
+type MockState = {
+  notes: {
+    isLoading: boolean;
+  };
+};
+
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
@@ -18,15 +24,19 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("@/store/noteSlice", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/store/noteSlice")>(
-      "@/store/noteSlice",
-    );
+  try {
+    const actual =
+      await vi.importActual<typeof import("@/store/noteSlice")>(
+        "@/store/noteSlice",
+      );
 
-  return {
-    ...actual,
-    deleteNote: vi.fn(),
-  };
+    return {
+      ...actual,
+      deleteNote: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load noteSlice mock", { cause: error });
+  }
 });
 
 vi.mock("@/components/ui/card", () => ({
@@ -152,12 +162,13 @@ describe("NoteCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          isLoading: false,
-        },
-      }),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockState) => unknown) =>
+        selector({
+          notes: {
+            isLoading: false,
+          },
+        }),
     );
 
     vi.mocked(deleteNote).mockReturnValue("delete-note-action" as never);
@@ -172,9 +183,16 @@ describe("NoteCard", () => {
 
     expect(screen.getByText("Test Note")).toBeInTheDocument();
 
-    expect(
-      screen.getByText((content) => content.includes("29 Aug 2026")),
-    ).toBeInTheDocument();
+    const expectedDate = new Date(note.updatedAt).toLocaleDateString(
+      undefined,
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      },
+    );
+
+    expect(screen.getByText(`[${expectedDate}]`)).toBeInTheDocument();
   });
 
   it("calls onClick when the note card is clicked", () => {
@@ -291,12 +309,13 @@ describe("NoteCard", () => {
   });
 
   it("disables delete confirmation while deletion is loading", () => {
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector({
-        notes: {
-          isLoading: true,
-        },
-      }),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockState) => unknown) =>
+        selector({
+          notes: {
+            isLoading: true,
+          },
+        }),
     );
 
     render(<NoteCard note={note} onClick={vi.fn()} />);

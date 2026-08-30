@@ -1,9 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import MoveNoteDialog from "@/components/notes/MoveNoteDialog";
@@ -26,36 +21,44 @@ let mockState: {
   };
 };
 
+type MockState = typeof mockState;
+
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
 }));
 
 vi.mock("@/store/folderSlice", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/store/folderSlice")>(
+  try {
+    const actual = await vi.importActual<typeof import("@/store/folderSlice")>(
       "@/store/folderSlice",
     );
 
-  return {
-    ...actual,
-    getAllFolders: vi.fn(),
-  };
+    return {
+      ...actual,
+      getAllFolders: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load folderSlice mock", { cause: error });
+  }
 });
 
 vi.mock("@/store/noteSlice", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/store/noteSlice")>(
-      "@/store/noteSlice",
-    );
+  try {
+    const actual =
+      await vi.importActual<typeof import("@/store/noteSlice")>(
+        "@/store/noteSlice",
+      );
 
-  return {
-    ...actual,
-    updateNote: vi.fn(),
-  };
+    return {
+      ...actual,
+      updateNote: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load noteSlice mock", { cause: error });
+  }
 });
 
-// Keep the test focused on MoveNoteDialog behavior.
 vi.mock("@/components/ui/dialog", () => ({
   Dialog: ({
     open,
@@ -70,10 +73,7 @@ vi.mock("@/components/ui/dialog", () => ({
       <div data-testid="dialog">
         {children}
 
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-        >
+        <button type="button" onClick={() => onOpenChange(false)}>
           Close dialog
         </button>
       </div>
@@ -175,21 +175,17 @@ describe("MoveNoteDialog", () => {
       },
     };
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector(mockState),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockState) => unknown) => selector(mockState),
     );
 
     mockDispatch.mockImplementation(() => ({
       unwrap: vi.fn().mockResolvedValue({}),
     }));
 
-    vi.mocked(getAllFolders).mockReturnValue(
-      "getAllFolders-action" as never,
-    );
+    vi.mocked(getAllFolders).mockReturnValue("getAllFolders-action" as never);
 
-    vi.mocked(updateNote).mockReturnValue(
-      "updateNote-action" as never,
-    );
+    vi.mocked(updateNote).mockReturnValue("updateNote-action" as never);
   });
 
   it("renders the move note dialog", () => {
@@ -203,17 +199,13 @@ describe("MoveNoteDialog", () => {
       screen.getByText('Choose where you want to move "Meeting notes".'),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByLabelText("Folder"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Folder")).toBeInTheDocument();
 
     expect(
       screen.getByRole("option", { name: "No Folder" }),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("option", { name: "Work" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Work" })).toBeInTheDocument();
 
     expect(
       screen.getByRole("option", { name: "Personal" }),
@@ -255,9 +247,7 @@ describe("MoveNoteDialog", () => {
     renderDialog();
 
     expect(getAllFolders).toHaveBeenCalledTimes(1);
-    expect(mockDispatch).toHaveBeenCalledWith(
-      "getAllFolders-action",
-    );
+    expect(mockDispatch).toHaveBeenCalledWith("getAllFolders-action");
   });
 
   it("does not fetch folders when folders are already loaded", () => {
@@ -282,9 +272,7 @@ describe("MoveNoteDialog", () => {
   it("disables the move button when the selected folder is the current folder", () => {
     renderDialog();
 
-    expect(
-      screen.getByRole("button", { name: "Move note" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Move note" })).toBeDisabled();
   });
 
   it("enables the move button when a different folder is selected", () => {
@@ -294,9 +282,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "folder-2" },
     });
 
-    expect(
-      screen.getByRole("button", { name: "Move note" }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Move note" })).toBeEnabled();
   });
 
   it("moves the note to another folder", async () => {
@@ -306,9 +292,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "folder-2" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Move note" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Move note" }));
 
     await waitFor(() => {
       expect(updateNote).toHaveBeenCalledWith({
@@ -319,9 +303,7 @@ describe("MoveNoteDialog", () => {
       });
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(
-      "updateNote-action",
-    );
+    expect(mockDispatch).toHaveBeenCalledWith("updateNote-action");
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
@@ -342,9 +324,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Move note" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Move note" }));
 
     await waitFor(() => {
       expect(updateNote).toHaveBeenCalledWith({
@@ -367,9 +347,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "folder-2" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Move note" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Move note" }));
 
     await waitFor(() => {
       expect(mockOnMoved).toHaveBeenCalledTimes(1);
@@ -383,9 +361,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "folder-2" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Move note" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Move note" }));
 
     await waitFor(() => {
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
@@ -403,9 +379,7 @@ describe("MoveNoteDialog", () => {
       target: { value: "folder-2" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Move note" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Move note" }));
 
     await waitFor(() => {
       expect(updateNote).toHaveBeenCalledWith({
@@ -425,25 +399,17 @@ describe("MoveNoteDialog", () => {
 
     renderDialog();
 
-    expect(
-      screen.getByRole("button", { name: "Moving..." }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Moving..." })).toBeDisabled();
 
-    expect(
-      screen.getByRole("button", { name: "Cancel" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
 
-    expect(
-      screen.getByLabelText("Folder"),
-    ).toBeDisabled();
+    expect(screen.getByLabelText("Folder")).toBeDisabled();
   });
 
   it("closes the dialog when Cancel is clicked", () => {
     renderDialog();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Cancel" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
@@ -451,9 +417,7 @@ describe("MoveNoteDialog", () => {
   it("closes the dialog when the dialog requests closing", () => {
     renderDialog();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Close dialog" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Close dialog" }));
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });

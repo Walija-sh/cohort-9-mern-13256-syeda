@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { NavigateFunction } from "react-router-dom";
 
 import NoteEditor from "@/pages/NoteEditor";
 import {
@@ -8,20 +9,31 @@ import {
   getNoteById,
   updateNote,
 } from "@/store/noteSlice";
+import type { AppDispatch, RootState } from "@/store/store";
+import type { Note } from "@/types/note";
 
-const mockDispatch = vi.fn();
-const mockNavigate = vi.fn();
+type MockDispatch = (
+  action: Parameters<AppDispatch>[0],
+) => {
+  unwrap: () => Promise<unknown>;
+};
+
+const mockDispatch = vi.fn<MockDispatch>();
+const mockNavigate = vi.fn<NavigateFunction>();
+
+const mockUseAppSelector = vi.fn<
+  <T>(selector: (state: RootState) => T) => T
+>();
 
 let mockParams: {
   id?: string;
   folderId?: string;
 } = {};
 
-const mockUseAppSelector = vi.fn();
-
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: unknown) => mockUseAppSelector(selector),
+  useAppSelector: <T,>(selector: (state: RootState) => T) =>
+    mockUseAppSelector(selector),
 }));
 
 vi.mock("react-router-dom", () => ({
@@ -76,7 +88,7 @@ vi.mock("@/components/notes/NoteEditor", () => ({
 }));
 
 describe("NoteEditor", () => {
-  const note = {
+  const note: Note = {
     _id: "note-1",
     title: "Existing Note",
     content: {
@@ -88,6 +100,10 @@ describe("NoteEditor", () => {
         },
       ],
     },
+    owner: "user-1",
+    parentFolder: null,
+    createdAt: "2026-08-29T00:00:00.000Z",
+    updatedAt: "2026-08-29T00:00:00.000Z",
   };
 
   beforeEach(() => {
@@ -97,8 +113,24 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [],
           currentNote: null,
+          currentNoteRequestId: null,
+          isLoading: false,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
           isLoading: false,
           error: null,
         },
@@ -125,9 +157,13 @@ describe("NoteEditor", () => {
 
     expect(screen.getByPlaceholderText("Note title")).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: /Save/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Save/i }),
+    ).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Cancel/i }),
+    ).toBeInTheDocument();
 
     expect(screen.getByTestId("note-editor")).toBeInTheDocument();
   });
@@ -177,7 +213,9 @@ describe("NoteEditor", () => {
 
     expect(mockDispatch).toHaveBeenCalledWith("createNote-action");
 
-    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/notes/new-note-1");
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/dashboard/notes/new-note-1",
+    );
   });
 
   it("creates a root note with a null parent folder", async () => {
@@ -225,7 +263,9 @@ describe("NoteEditor", () => {
       },
     });
 
-    expect(screen.getByRole("button", { name: /Save/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /Save/i }),
+    ).toBeDisabled();
 
     expect(createNote).not.toHaveBeenCalled();
   });
@@ -247,7 +287,11 @@ describe("NoteEditor", () => {
   it("navigates back when cancel is clicked", () => {
     render(<NoteEditor />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Cancel/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Cancel/i,
+      }),
+    );
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
@@ -259,9 +303,25 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [],
           currentNote: null,
+          currentNoteRequestId: "request-1",
           isLoading: true,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
+          isLoading: false,
           error: null,
         },
       }),
@@ -271,7 +331,9 @@ describe("NoteEditor", () => {
 
     expect(screen.getByText("Loading note...")).toBeInTheDocument();
 
-    expect(screen.queryByPlaceholderText("Note title")).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("Note title"),
+    ).not.toBeInTheDocument();
 
     expect(getNoteById).toHaveBeenCalledWith("note-1");
   });
@@ -283,10 +345,26 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [],
           currentNote: null,
+          currentNoteRequestId: null,
           isLoading: false,
           error: "Failed to load note",
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
+          isLoading: false,
+          error: null,
         },
       }),
     );
@@ -295,7 +373,9 @@ describe("NoteEditor", () => {
 
     expect(screen.getByText("Failed to load note")).toBeInTheDocument();
 
-    expect(screen.queryByPlaceholderText("Note title")).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("Note title"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows the default not found message when there is no error", () => {
@@ -315,8 +395,24 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [note],
           currentNote: note,
+          currentNoteRequestId: null,
+          isLoading: false,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
           isLoading: false,
           error: null,
         },
@@ -327,11 +423,13 @@ describe("NoteEditor", () => {
 
     expect(getNoteById).toHaveBeenCalledWith("note-1");
 
-    expect(screen.getByDisplayValue("Existing Note")).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue("Existing Note"),
+    ).toBeInTheDocument();
 
-    expect(screen.getByTestId("editor-content")).toHaveTextContent(
-      "Existing content",
-    );
+    expect(
+      screen.getByTestId("editor-content"),
+    ).toHaveTextContent("Existing content");
   });
 
   it("updates an existing note and navigates to its details page", async () => {
@@ -341,8 +439,24 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [note],
           currentNote: note,
+          currentNoteRequestId: null,
+          isLoading: false,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
           isLoading: false,
           error: null,
         },
@@ -363,7 +477,11 @@ describe("NoteEditor", () => {
       }),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Save/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Save/i,
+      }),
+    );
 
     await waitFor(() => {
       expect(updateNote).toHaveBeenCalledWith({
@@ -388,7 +506,9 @@ describe("NoteEditor", () => {
       });
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/notes/note-1");
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/dashboard/notes/note-1",
+    );
   });
 
   it("does not navigate when creating a note fails", async () => {
@@ -404,7 +524,11 @@ describe("NoteEditor", () => {
       },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Save/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Save/i,
+      }),
+    );
 
     await waitFor(() => {
       expect(createNote).toHaveBeenCalled();
@@ -420,8 +544,24 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [note],
           currentNote: note,
+          currentNoteRequestId: null,
+          isLoading: false,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
           isLoading: false,
           error: null,
         },
@@ -434,7 +574,11 @@ describe("NoteEditor", () => {
 
     render(<NoteEditor />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Save/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /Save/i,
+      }),
+    );
 
     await waitFor(() => {
       expect(updateNote).toHaveBeenCalled();
@@ -446,9 +590,25 @@ describe("NoteEditor", () => {
   it("shows the saving state when Redux reports a loading save", () => {
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [],
           currentNote: null,
+          currentNoteRequestId: null,
           isLoading: true,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
+          isLoading: false,
           error: null,
         },
       }),
@@ -462,7 +622,11 @@ describe("NoteEditor", () => {
       },
     });
 
-    expect(screen.getByRole("button", { name: "Saving..." })).toBeDisabled();
+    expect(
+      screen.getByRole("button", {
+        name: "Saving...",
+      }),
+    ).toBeDisabled();
   });
 
   it("clears the current note when the component unmounts in edit mode", () => {
@@ -472,8 +636,24 @@ describe("NoteEditor", () => {
 
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
+        auth: {
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: false,
+          error: null,
+        },
         notes: {
+          notes: [note],
           currentNote: note,
+          currentNoteRequestId: null,
+          isLoading: false,
+          error: null,
+        },
+        folders: {
+          folders: [],
+          currentFolder: null,
+          explorerRequestId: null,
           isLoading: false,
           error: null,
         },

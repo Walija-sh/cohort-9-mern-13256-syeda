@@ -33,13 +33,11 @@ describe("noteSlice", () => {
     currentNoteRequestId: null,
     isLoading: false,
     error: null,
-  };
+  } satisfies ReturnType<typeof reducer>;
 
   describe("synchronous reducers", () => {
     it("returns the initial state", () => {
-      expect(reducer(undefined, { type: "unknown" })).toEqual(
-        initialState,
-      );
+      expect(reducer(undefined, { type: "unknown" })).toEqual(initialState);
     });
 
     it("sets notes", () => {
@@ -81,10 +79,7 @@ describe("noteSlice", () => {
         error: "Previous error",
       };
 
-      const state = reducer(
-        stateWithCurrentNote,
-        clearCurrentNote(),
-      );
+      const state = reducer(stateWithCurrentNote, clearCurrentNote());
 
       expect(state.currentNote).toBeNull();
       expect(state.currentNoteRequestId).toBeNull();
@@ -239,26 +234,16 @@ describe("noteSlice", () => {
 
       const staleResponseState = reducer(
         latestRequestState,
-        getNoteById.fulfilled(
-          firstNote,
-          "request-1",
-          "note-1",
-        ),
+        getNoteById.fulfilled(firstNote, "request-1", "note-1"),
       );
 
       expect(staleResponseState.currentNote).toBeNull();
-      expect(staleResponseState.currentNoteRequestId).toBe(
-        "request-2",
-      );
+      expect(staleResponseState.currentNoteRequestId).toBe("request-2");
       expect(staleResponseState.isLoading).toBe(true);
 
       const finalState = reducer(
         staleResponseState,
-        getNoteById.fulfilled(
-          secondNote,
-          "request-2",
-          "note-2",
-        ),
+        getNoteById.fulfilled(secondNote, "request-2", "note-2"),
       );
 
       expect(finalState.currentNote).toEqual(secondNote);
@@ -347,14 +332,10 @@ describe("noteSlice", () => {
 
       const state = reducer(
         stateWithNote,
-        updateNote.fulfilled(
-          updatedNote,
-          "request-1",
-          {
-            id: "note-1",
-            payload,
-          },
-        ),
+        updateNote.fulfilled(updatedNote, "request-1", {
+          id: "note-1",
+          payload,
+        }),
       );
 
       expect(state.isLoading).toBe(false);
@@ -370,14 +351,10 @@ describe("noteSlice", () => {
 
       const state = reducer(
         initialState,
-        updateNote.fulfilled(
-          updatedNote,
-          "request-1",
-          {
-            id: "note-2",
-            payload,
-          },
-        ),
+        updateNote.fulfilled(updatedNote, "request-1", {
+          id: "note-2",
+          payload,
+        }),
       );
 
       expect(state.notes).toEqual([]);
@@ -430,11 +407,7 @@ describe("noteSlice", () => {
 
       const state = reducer(
         stateWithNotes,
-        deleteNote.fulfilled(
-          "note-1",
-          "request-1",
-          "note-1",
-        ),
+        deleteNote.fulfilled("note-1", "request-1", "note-1"),
       );
 
       expect(state.isLoading).toBe(false);
@@ -452,11 +425,7 @@ describe("noteSlice", () => {
 
       const state = reducer(
         stateWithCurrentNote,
-        deleteNote.fulfilled(
-          "note-1",
-          "request-1",
-          "note-1",
-        ),
+        deleteNote.fulfilled("note-1", "request-1", "note-1"),
       );
 
       expect(state.notes).toEqual([]);
@@ -480,11 +449,7 @@ describe("noteSlice", () => {
 
       const state = reducer(
         stateWithNotes,
-        deleteNote.fulfilled(
-          "note-2",
-          "request-1",
-          "note-2",
-        ),
+        deleteNote.fulfilled("note-2", "request-1", "note-2"),
       );
 
       expect(state.notes).toEqual([currentNote]);

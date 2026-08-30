@@ -10,12 +10,14 @@ const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.fn();
 const mockOnOpenChange = vi.fn();
 
-let mockState: {
+type MockRootState = {
   folders: {
     isLoading: boolean;
     error: string | null;
   };
 };
+
+let mockState: MockRootState;
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => mockDispatch,
@@ -23,16 +25,19 @@ vi.mock("@/store/hooks", () => ({
 }));
 
 vi.mock("@/store/folderSlice", async () => {
-  const actual =
-    await vi.importActual<typeof import("../../src/store/folderSlice")>(
-      "@/store/folderSlice",
-    );
+  try {
+    const actual = await vi.importActual<
+      typeof import("../../src/store/folderSlice")
+    >("@/store/folderSlice");
 
-  return {
-    ...actual,
-    createFolder: vi.fn(),
-    updateFolder: vi.fn(),
-  };
+    return {
+      ...actual,
+      createFolder: vi.fn(),
+      updateFolder: vi.fn(),
+    };
+  } catch (error) {
+    throw new Error("Failed to load folderSlice mock", { cause: error });
+  }
 });
 
 // Keep the test focused on FolderDialog behavior rather than Radix internals.
@@ -72,9 +77,7 @@ vi.mock("@/components/ui/dialog", () => ({
     <div>{children}</div>
   ),
 
-  DialogTitle: ({ children }: { children: ReactNode }) => (
-    <h2>{children}</h2>
-  ),
+  DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
 }));
 
 vi.mock("@/components/ui/button", () => ({
@@ -150,44 +153,31 @@ describe("FolderDialog", () => {
       },
     };
 
-    mockUseAppSelector.mockImplementation((selector) =>
-      selector(mockState),
+    mockUseAppSelector.mockImplementation(
+      (selector: (state: MockRootState) => unknown) => selector(mockState),
     );
 
     mockDispatch.mockImplementation(() => ({
       unwrap: vi.fn().mockResolvedValue({}),
     }));
 
-    vi.mocked(createFolder).mockReturnValue(
-      "createFolder-action" as never,
-    );
+    vi.mocked(createFolder).mockReturnValue("createFolder-action" as never);
 
-    vi.mocked(updateFolder).mockReturnValue(
-      "updateFolder-action" as never,
-    );
+    vi.mocked(updateFolder).mockReturnValue("updateFolder-action" as never);
   });
 
   it("renders the create folder dialog", () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
     expect(
       screen.getByRole("heading", { name: "Create folder" }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText(
-        "Create a new folder to organize your notes.",
-      ),
+      screen.getByText("Create a new folder to organize your notes."),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByPlaceholderText("Folder name"),
-    ).toHaveValue("");
+    expect(screen.getByPlaceholderText("Folder name")).toHaveValue("");
 
     expect(
       screen.getByRole("button", { name: "Create folder" }),
@@ -196,11 +186,7 @@ describe("FolderDialog", () => {
 
   it("renders the rename folder dialog with the existing name", () => {
     render(
-      <FolderDialog
-        folder={folder}
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
+      <FolderDialog folder={folder} open onOpenChange={mockOnOpenChange} />,
     );
 
     expect(
@@ -211,35 +197,19 @@ describe("FolderDialog", () => {
       screen.getByText("Update the name of this folder."),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByPlaceholderText("Folder name"),
-    ).toHaveValue("Work");
+    expect(screen.getByPlaceholderText("Folder name")).toHaveValue("Work");
 
-    expect(
-      screen.getByRole("button", { name: "Save changes" }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
   });
 
   it("does not render the dialog when closed", () => {
-    render(
-      <FolderDialog
-        open={false}
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open={false} onOpenChange={mockOnOpenChange} />);
 
-    expect(
-      screen.queryByTestId("dialog"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("dialog")).not.toBeInTheDocument();
   });
 
   it("creates a folder with a trimmed name", async () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
     const input = screen.getByPlaceholderText("Folder name");
 
@@ -247,9 +217,7 @@ describe("FolderDialog", () => {
       target: { value: "  Personal  " },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create folder" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Create folder" }));
 
     await waitFor(() => {
       expect(createFolder).toHaveBeenCalledWith({
@@ -257,20 +225,13 @@ describe("FolderDialog", () => {
       });
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(
-      "createFolder-action",
-    );
+    expect(mockDispatch).toHaveBeenCalledWith("createFolder-action");
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
 
   it("does not create a folder when the name is empty", () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
     const input = screen.getByPlaceholderText("Folder name");
 
@@ -282,21 +243,14 @@ describe("FolderDialog", () => {
       screen.getByRole("button", { name: "Create folder" }),
     ).toBeDisabled();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create folder" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Create folder" }));
 
     expect(createFolder).not.toHaveBeenCalled();
     expect(mockDispatch).not.toHaveBeenCalled();
   });
 
   it("creates a folder when Enter is pressed", async () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
     const input = screen.getByPlaceholderText("Folder name");
 
@@ -319,11 +273,7 @@ describe("FolderDialog", () => {
 
   it("updates an existing folder with a trimmed name", async () => {
     render(
-      <FolderDialog
-        folder={folder}
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
+      <FolderDialog folder={folder} open onOpenChange={mockOnOpenChange} />,
     );
 
     const input = screen.getByPlaceholderText("Folder name");
@@ -332,9 +282,7 @@ describe("FolderDialog", () => {
       target: { value: "  Updated Work  " },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Save changes" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
       expect(updateFolder).toHaveBeenCalledWith({
@@ -345,9 +293,7 @@ describe("FolderDialog", () => {
       });
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(
-      "updateFolder-action",
-    );
+    expect(mockDispatch).toHaveBeenCalledWith("updateFolder-action");
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
@@ -357,23 +303,13 @@ describe("FolderDialog", () => {
       unwrap: vi.fn().mockRejectedValue(new Error("Create failed")),
     }));
 
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
-    fireEvent.change(
-      screen.getByPlaceholderText("Folder name"),
-      {
-        target: { value: "Projects" },
-      },
-    );
+    fireEvent.change(screen.getByPlaceholderText("Folder name"), {
+      target: { value: "Projects" },
+    });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create folder" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Create folder" }));
 
     await waitFor(() => {
       expect(createFolder).toHaveBeenCalledWith({
@@ -390,23 +326,14 @@ describe("FolderDialog", () => {
     }));
 
     render(
-      <FolderDialog
-        folder={folder}
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
+      <FolderDialog folder={folder} open onOpenChange={mockOnOpenChange} />,
     );
 
-    fireEvent.change(
-      screen.getByPlaceholderText("Folder name"),
-      {
-        target: { value: "Renamed Work" },
-      },
-    );
+    fireEvent.change(screen.getByPlaceholderText("Folder name"), {
+      target: { value: "Renamed Work" },
+    });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Save changes" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
       expect(updateFolder).toHaveBeenCalledWith({
@@ -423,90 +350,51 @@ describe("FolderDialog", () => {
   it("shows the loading state for creating a folder", () => {
     mockState.folders.isLoading = true;
 
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
-    fireEvent.change(
-      screen.getByPlaceholderText("Folder name"),
-      {
-        target: { value: "Projects" },
-      },
-    );
+    fireEvent.change(screen.getByPlaceholderText("Folder name"), {
+      target: { value: "Projects" },
+    });
 
-    expect(
-      screen.getByRole("button", { name: "Creating..." }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Creating..." })).toBeDisabled();
 
-    expect(
-      screen.getByRole("button", { name: "Cancel" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
   });
 
   it("shows the loading state for updating a folder", () => {
     mockState.folders.isLoading = true;
 
     render(
-      <FolderDialog
-        folder={folder}
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
+      <FolderDialog folder={folder} open onOpenChange={mockOnOpenChange} />,
     );
 
-    expect(
-      screen.getByRole("button", { name: "Saving..." }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Saving..." })).toBeDisabled();
 
-    expect(
-      screen.getByRole("button", { name: "Cancel" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
   });
 
   it("shows the folder error", () => {
     mockState.folders.error = "Folder already exists";
 
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
-    expect(
-      screen.getByRole("alert"),
-    ).toHaveTextContent("Folder already exists");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Folder already exists",
+    );
   });
 
   it("closes the dialog when Cancel is clicked", () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Cancel" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
 
   it("closes the dialog when the dialog requests closing", () => {
-    render(
-      <FolderDialog
-        open
-        onOpenChange={mockOnOpenChange}
-      />,
-    );
+    render(<FolderDialog open onOpenChange={mockOnOpenChange} />);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Close dialog" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Close dialog" }));
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
